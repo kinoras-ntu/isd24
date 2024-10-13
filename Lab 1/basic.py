@@ -8,7 +8,6 @@
 import pyrealsense2 as rs
 import numpy as np
 import cv2
-import tensorflow as tf
 
 # Configure depth and color streams
 pipeline = rs.pipeline()
@@ -38,7 +37,9 @@ arucoDetector = cv2.aruco.ArucoDetector(arucoDict, arucoParams)
 
 # Start streaming
 pipeline.start(config)
-printed = False
+
+counter = 0
+
 
 def centroid(vertices):
     x, y = 0, 0
@@ -59,7 +60,6 @@ def centroid(vertices):
 
 try:
     while True:
-
         # Wait for a coherent pair of frames: depth and color
         frames = pipeline.wait_for_frames()
         depth_frame = frames.get_depth_frame()
@@ -74,7 +74,7 @@ try:
         
         corners, ids, rejected = arucoDetector.detectMarkers(color_image)
         
-        if (not printed):
+        if (counter % 50 == 0):
             ans = {}
             for i in range(len(corners)):
                 x, y = centroid(corners[i][0])
@@ -82,8 +82,11 @@ try:
                 # print(corners[i][0], x, y, depth, ids[i][0])
                 ans[int(ids[i][0])] = rs.rs2_deproject_pixel_to_point(depth_intrinsics, [x, y], depth)
                 # print(rs.rs2_deproject_pixel_to_point(depth_intrinsics, [x, y], depth))
-                printed = True
+                # printed = True
             print(ans)
+            print("====================================================")
+
+        counter += 1
 
         color_image = cv2.aruco.drawDetectedMarkers(color_image, corners, ids)
         # Apply colormap on depth image (image must be converted to 8-bit per pixel first)
@@ -105,7 +108,6 @@ try:
         cv2.waitKey(1)
 
 finally:
-
     # Stop streaming
     pipeline.stop()
     
