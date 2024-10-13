@@ -38,17 +38,15 @@ printed = False
 
 ####################################################
 
-
 HOST = "192.168.1.120"  # csie523
-HOST = "127.0.0.1"      # localhost
-PORT = 5667
+# HOST = "127.0.0.1"      # localhost
+PORT = 14514
 
 def receive(sock):
-    data = sock.recv(1024)
+    data = sock.recv(2048)
     data = data.decode('utf-8')
-    print(data)         # [DEBUG]
     msg = json.loads(data)
-    return msg
+    return msg["messages"]
 
 def send(sock, msg):
     data = json.dumps(msg)
@@ -72,19 +70,42 @@ def centroid(vertices):
     y /= 6 * signed_area
     return int(x), int(y)
 
-def find_transformation_matrix(realsense_coords, unity_coords):
-    # Number of points
-    N = realsense_coords.shape[0]
-   
-    # Convert to homogeneous coordinates (add 1 as the fourth coordinate)
-    realsense_homogeneous = np.hstack([realsense_coords, np.ones((N, 1))])
-    unity_homogeneous = np.hstack([unity_coords, np.ones((N, 1))])
-   
-    # Solve for the transformation matrix using lstsq
-    T, _, _, _ = np.linalg.lstsq(realsense_homogeneous, unity_homogeneous, rcond=None)
+def find_transformation_matrix(realsense_points, unity_points):
+    N = realsense_points.shape[0]
+
+    # Prepare the design matrix A and the observation vector B
+    A = np.zeros((N * 3, 12))
+    B = np.zeros(N * 3)
+
+    for i in range(N):
+        x_r, y_r, z_r = realsense_points[i]
+        x_u, y_u, z_u = unity_points[i]
+
+        # Equation for x_u
+        A[3 * i] = [x_r, y_r, z_r, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+        B[3 * i] = x_u
+
+        # Equation for y_u
+        A[3 * i + 1] = [0, 0, 0, 0, x_r, y_r, z_r, 1, 0, 0, 0, 0]
+        B[3 * i + 1] = y_u
+
+        # Equation for z_u
+        A[3 * i + 2] = [0, 0, 0, 0, 0, 0, 0, 0, x_r, y_r, z_r, 1]
+        B[3 * i + 2] = z_u
+
+    # Solve the linear system A * p = B
+    # p contains the elements of the transformation matrix T
+    p, _, _, _ = np.linalg.lstsq(A, B, rcond=None)
+
+    # Construct the transformation matrix T
+    T = np.zeros((4, 4))
+    T[0, :] = [p[0], p[1], p[2], p[3]]
+    T[1, :] = [p[4], p[5], p[6], p[7]]
+    T[2, :] = [p[8], p[9], p[10], p[11]]
+    T[3, :] = [0, 0, 0, 1]  # Homogeneous coordinate
+    print(T)
     return T
-
-
+    
 T = None
 unity_anchors = {}
 detected_ids = []
@@ -96,10 +117,12 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
     print("Connected to server")
     while True:
         try:
-            msg = receive(sock)
+            msgs = receive(sock)
+            print("********************************************")
             # decomposite msg
-            unity_anchors[msg["id"]] =  msg["position"]
-            print(unity_anchors)    # [DEBUG]
+            for msg in msgs:
+                unity_anchors[msg["id"]] =  msg["position"]
+
             if sorted(list(unity_anchors.keys())) != [1, 2, 3, 4, 5, 6]:
                 continue
 
@@ -163,24 +186,25 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
                 print("Calibration done.")
             
             # send new markers with new coordinates
+            out_messages = {'messages': []}
+
             for id, coordinate in realsense_coordinates.items():
                 if (id in [1, 2, 3, 4, 5, 6]) or (id in detected_ids) or all(x == 0.0 for x in coordinate):
                     continue
                 coordinate.append(1)
                 anchor_realsense_coordinate = np.array(coordinate)
-                anchor_unity_coordinate = np.matmul(anchor_realsense_coordinate, T)
+                anchor_unity_coordinate = np.matmul(T, anchor_realsense_coordinate)
                 x, y, z = anchor_unity_coordinate[:-1].tolist()
                 print("Realsense Data:", id, coordinate)
-                send(sock, {
-                    'id': id,
-                    'position': {'x': x, 'y': y, 'z': z}
-                })
+                out_messages['messages'].append({'id': id, 'position': {'x': x, 'y': y, 'z': z}})
                 detected_ids.append(id)
+
+            send(sock, out_messages)
 
         except KeyboardInterrupt:
             exit()
+
         except:
             pass
-
 
 pipeline.stop()
