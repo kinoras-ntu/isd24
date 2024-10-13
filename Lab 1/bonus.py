@@ -4,14 +4,15 @@
 ###############################################
 ##      Open CV and Numpy integration        ##
 ###############################################
-import os
-os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1' 
 
+import os
 import pyrealsense2 as rs
 import numpy as np
 import cv2
 import tensorflow as tf
+
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1' 
 
 # Configure depth and color streams
 pipeline = rs.pipeline()
@@ -55,13 +56,10 @@ detection_classes = detection_graph.get_tensor_by_name('detection_classes:0')
 num_detections = detection_graph.get_tensor_by_name('num_detections:0')
 
 colors_hash = {}
-
 counter = 0
-
 
 try:
     while True:
-        obj_coordinate = {}
         # Wait for a coherent pair of frames: depth and color
         frames = pipeline.wait_for_frames()
         depth_frame = frames.get_depth_frame()
@@ -69,10 +67,12 @@ try:
         if not depth_frame or not color_frame:
             continue
         depth_intrinsics = depth_frame.profile.as_video_stream_profile().intrinsics
+
         # Convert images to numpy arrays
         depth_image = np.asanyarray(depth_frame.get_data())
         color_image = np.asanyarray(color_frame.get_data())
-        scaled_size = (color_frame.width, color_frame.height)
+
+        obj_coordinate = {}
         image_expanded = np.expand_dims(color_image, axis=0)
         (boxes, scores, classes, num) = sess.run([detection_boxes, detection_scores, detection_classes, num_detections],
                                          feed_dict={image_tensor: image_expanded})
@@ -127,7 +127,6 @@ try:
         cv2.waitKey(1)
 
 finally:
-
     # Stop streaming
     pipeline.stop()
     
