@@ -121,7 +121,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             print("********************************************")
             # decomposite msg
             for msg in msgs:
-                unity_anchors[msg["id"]] =  msg["position"]
+                unity_anchors[msg["id"]] = msg["position"]
 
             if sorted(list(unity_anchors.keys())) != [1, 2, 3, 4, 5, 6]:
                 continue
