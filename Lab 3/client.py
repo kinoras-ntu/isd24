@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 import pyrealsense2 as rs
 
-from mediapipe import MediaPipe
+from mpipe import MediaPipe
 
 HOST = "127.0.0.1"      # localhost
 HOST = "172.20.10.3"    # hotspot
