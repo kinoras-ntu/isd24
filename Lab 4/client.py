@@ -11,9 +11,9 @@ HOST = "172.20.10.3"    # hotspot
 HOST = "192.168.1.120"  # csie523
 PORT = 999
 
-CART_ID = [50]
-REFILL_ID = [7]
-CALIBRATION_ID = [3, 4]
+CART_ID = [10, 100, 125, 230]
+REFILL_ID = [4]
+CALIBRATION_ID = [3, 6]
 
 def find_transformation_matrix(realsense_points, unity_points):
     assert realsense_points.shape == unity_points.shape, "Point sets must have the same shape."
@@ -97,8 +97,8 @@ def main():
         print("[main] The demo requires Depth camera with Color sensor")
         exit(0)
 
-    config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
-    config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
+    config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
+    config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
 
     pipeline.start(config)
     align_to = rs.stream.color
@@ -148,10 +148,16 @@ def main():
                 depth_intrinsics = depth_frame.profile.as_video_stream_profile().intrinsics
                 color_image = np.asanyarray(color_frame.get_data())
 
+                modified_image = color_image
+
+                white_image = np.ones_like(color_image) * 255
+                modified_image = white_image.copy()  # Start with a white image
+                modified_image[:720, 620:] = color_image[:720, 620:]  # Copy the top-left region
+
                 # Retrieve skeleton data
-                detection_results = mp.detect(color_image)
-                color_image = mp.draw_landmarks_on_image(color_image, detection_results)
-                skeleton = mp.skeleton(color_image, detection_results, depth_frame)
+                detection_results = mp.detect(modified_image)
+                modified_image = mp.draw_landmarks_on_image(modified_image, detection_results)
+                skeleton = mp.skeleton(modified_image, detection_results, depth_frame)
 
                 if calibrated:
 
@@ -178,9 +184,10 @@ def main():
                         aruco_coordinates[int(ids[i][0])] = rs.rs2_deproject_pixel_to_point(depth_intrinsics, [x, y], depth)
 
                     # Get & transform cart coordinates
-                    for id in CART_ID:
+                    for index, id in enumerate(CART_ID):
                         if id in aruco_coordinates:
                             response_message['cartPosition'] = transform(T, aruco_coordinates[id])
+                            response_message['cartRotation']['y'] = (index - 1) * 90.0
                         else:
                             print("[WARNING] Cart marker not found, using previous position.")
 
@@ -244,7 +251,7 @@ def main():
         pipeline.stop()
 
 def receive(sock):
-    data = sock.recv(2048)
+    data = sock.recv(8192)
     data = data.decode('utf-8')
     print("Received:", data)
     msg = json.loads(data)
