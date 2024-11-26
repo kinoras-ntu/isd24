@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { MouseEventHandler, useEffect, useRef, useState } from 'react'
 
-const SERVER = 'http://127.0.0.1:5000'
+const SERVER = ''
 
 type NodeId = number
 
@@ -106,7 +106,7 @@ const App = () => {
         }
     }, [nodes])
 
-    canvasRef.current?.addEventListener('mousedown', (e) => {
+    const handleMouseDown: MouseEventHandler<HTMLCanvasElement> = (e) => {
         const rect = canvasRef.current?.getBoundingClientRect()
         if (rect) {
             const x = e.clientX - rect.left
@@ -125,9 +125,9 @@ const App = () => {
                 default:
             }
         }
-    })
+    }
 
-    canvasRef.current?.addEventListener('mousemove', (e) => {
+    const handleMouseMove: MouseEventHandler<HTMLCanvasElement> = (e) => {
         const rect = canvasRef.current?.getBoundingClientRect()
         if (rect) {
             const x = e.clientX - rect.left
@@ -146,15 +146,15 @@ const App = () => {
                 default:
             }
         }
-    })
+    }
 
-    canvasRef.current?.addEventListener('mouseup', () => {
+    const handleMouseUp = () => {
         setIsDrawing(false)
-    })
+    }
 
-    canvasRef.current?.addEventListener('mouseleave', () => {
+    const handleMouseLeave = () => {
         setIsDrawing(false)
-    })
+    }
 
     return (
         <>
@@ -165,7 +165,7 @@ const App = () => {
                     name="mode"
                     id="modebtn-idle"
                     checked={mode === 'idle'}
-                    onClick={() => setMode('idle')}
+                    onChange={() => setMode('idle')} // Added onChange handler
                 />
                 <label className="btn" htmlFor="modebtn-idle">
                     Idle
@@ -176,7 +176,7 @@ const App = () => {
                     name="mode"
                     id="modebtn-select"
                     checked={mode === 'select'}
-                    onClick={() => setMode('select')}
+                    onChange={() => setMode('select')} // Added onChange handler
                 />
                 <label className="btn" htmlFor="modebtn-select">
                     Select
@@ -187,19 +187,30 @@ const App = () => {
                     name="mode"
                     id="modebtn-draw"
                     checked={mode === 'draw'}
-                    onClick={() => setMode('draw')}
+                    onChange={() => setMode('draw')} // Added onChange handler
                 />
                 <label className="btn" htmlFor="modebtn-draw">
                     Draw
                 </label>
 
+                <div>{mode}</div>
+
                 <button id="save" className="btn" onClick={() => handleSave()}>
                     Save
                 </button>
             </div>
-            <div id="container">
-                <canvas ref={canvasRef} width="640" height="480"></canvas>
-                <img src="http://127.0.0.1:5000/video_feed" style={{ width: 640, height: 480 }} />
+            <div id="container" style={{ position: 'relative' }}>
+                <canvas
+                    ref={canvasRef}
+                    width="640"
+                    height="480"
+                    style={{ position: 'absolute', zIndex: 999 }}
+                    onMouseDown={handleMouseDown}
+                    onMouseMove={handleMouseMove}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseLeave}
+                ></canvas>
+                <img src={`${SERVER}/video_feed`} style={{ width: 640, height: 480 }} />
             </div>
         </>
     )

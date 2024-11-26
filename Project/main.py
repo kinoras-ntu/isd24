@@ -110,7 +110,7 @@ def get_nodes():
             return jsonify({'error': 'No landmarks detected'}), 400
 
         landmarks = latest_results.pose_landmarks.landmark
-        landmarks = [{'id': id, 'x': round(lm.x * WIDTH, 5), 'y': round(lm.y * HEIGHT, 5)} for id, lm in enumerate(landmarks)]
+        landmarks = [{'nodeId': id, 'x': round(lm.x * WIDTH, 5), 'y': round(lm.y * HEIGHT, 5)} for id, lm in enumerate(landmarks)]
 
         return jsonify({'nodes': landmarks})
     except Exception as e:

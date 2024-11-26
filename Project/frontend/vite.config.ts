@@ -9,5 +9,11 @@ export default defineConfig({
         alias: {
             '@': path.resolve(__dirname, './src')
         }
+    },
+    server: {
+        proxy: {
+            '/video_feed': 'http://127.0.0.1:5000',
+            '/nodes': 'http://127.0.0.1:5000',
+        },
     }
 })
