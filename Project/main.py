@@ -76,7 +76,20 @@ def generate_frames():
             latest_results = detection_results
 
             # Draw landmarks on image
-            color_image = mp.draw_landmarks_on_image(color_image, detection_results)
+            # color_image = mp.draw_landmarks_on_image(color_image, detection_results)
+
+            if detection_results.segmentation_mask is not None:
+                # Convert the segmentation mask to binary mask
+                segmentation_mask = detection_results.segmentation_mask
+                # Threshold the mask to create a binary image
+                mask = (segmentation_mask > 0.1).astype(np.uint8) * 255
+
+                # Find contours on the mask
+                contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+                # Draw contours on the color image
+                cv2.drawContours(color_image, contours, -1, (255, 255, 255), 2)
+
             _, buffer = cv2.imencode('.jpg', color_image)
 
             # Convert image to bytes
