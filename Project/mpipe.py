@@ -16,7 +16,6 @@ class MediaPipe:
         self.mp_drawing_styles = mp.solutions.drawing_styles  # mediapipe drawing style
         self.mp_holistic = mp.solutions.holistic              # mediapipe pose detection
         self.holistic = self.mp_holistic.Holistic(
-                        static_image_mode=True,
                         model_complexity=2,
                         enable_segmentation=True,
                         refine_face_landmarks=True)
