@@ -6,7 +6,7 @@ from flask_socketio import SocketIO
 from mpipe import MediaPipe
 
 
-USE_REALSENSE = False
+USE_REALSENSE = True
 HOST, PORT = "127.0.0.1", 5000
 WIDTH, HEIGHT, FPS = 640, 480, 30
 
@@ -51,7 +51,7 @@ mp = MediaPipe()
 
 ###############  Functions  ###############
 
-def generate_frames():
+def generate_frames(outline: bool = False):
     global latest_results
     try:
         while True:
@@ -76,9 +76,9 @@ def generate_frames():
             latest_results = detection_results
 
             # Draw landmarks on image
-            # color_image = mp.draw_landmarks_on_image(color_image, detection_results)
+            color_image = mp.draw_landmarks_on_image(color_image, detection_results)
 
-            if detection_results.segmentation_mask is not None:
+            if outline and detection_results.segmentation_mask is not None:
                 # Convert the segmentation mask to binary mask
                 segmentation_mask = detection_results.segmentation_mask
                 # Threshold the mask to create a binary image
@@ -109,7 +109,8 @@ def index():
 
 @app.route('/video_feed')
 def video_feed():
-    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    outline = request.args.get('outline') == 'true'
+    return Response(generate_frames(outline), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 @app.route('/nodes', methods=['GET'])
