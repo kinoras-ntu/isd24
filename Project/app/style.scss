@@ -1,0 +1,28 @@
+#app {
+    margin: 16px;
+    #control-bar {
+        #tool-selector-container {
+            button {
+                width: 8rem;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+            ul {
+                min-width: 8rem;
+            }
+        }
+        #stage-selector-container {
+            flex: 1;
+            display: flex;
+            gap: 1rem;
+            // justify-content: center;
+        }
+    }
+    main {
+        margin-top: 1rem;
+        canvas {
+            border: 1px solid black;
+        }
+    }
+}

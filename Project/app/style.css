@@ -1,0 +1,23 @@
+#app {
+  margin: 16px;
+}
+#app #control-bar #tool-selector-container button {
+  width: 8rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+#app #control-bar #tool-selector-container ul {
+  min-width: 8rem;
+}
+#app #control-bar #stage-selector-container {
+  flex: 1;
+  display: flex;
+  gap: 1rem;
+}
+#app main {
+  margin-top: 1rem;
+}
+#app main canvas {
+  border: 1px solid black;
+}
