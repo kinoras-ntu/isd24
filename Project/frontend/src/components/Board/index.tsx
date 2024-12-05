@@ -15,6 +15,7 @@ const SERVER = 'http://localhost:5000'
 const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
     const tool = useSelector((state: State) => state.tool)
     const stage = useSelector((state: State) => state.stage)
+    const outline = useSelector((state: State) => state.outline)
     const currentObject = useSelector((state: State) => state.currentObject)
     const finishedObjects = useSelector((state: State) => state.finishedObjects)
 
@@ -151,7 +152,7 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
                 onMouseUp={() => setIsDrawing(false)}
                 onMouseLeave={() => setIsDrawing(false)}
             />
-            <img src={`${SERVER}/video_feed`} style={{ height, width }} />
+            <img src={`${SERVER}/video_feed?outline=${outline}`} style={{ height, width }} />
         </div>
     )
 }

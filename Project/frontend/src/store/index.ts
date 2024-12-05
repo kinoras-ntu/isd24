@@ -7,6 +7,7 @@ import { defauleStage, defaultObject } from '@/constants/defaults'
 const initialState: State = {
     tool: 'Binding',
     stage: defauleStage,
+    outline: false,
     currentObject: structuredClone(defaultObject),
     finishedObjects: {
         Binding: [],
@@ -30,6 +31,8 @@ const reducer = (state: State = initialState, action: Action) => {
             return { ...state, stage: action.payload }
         case 'SET_CURRENT_OBJECT':
             return { ...state, currentObject: action.payload }
+        case 'SET_OUTLINE':
+            return { ...state, outline: action.payload }
         case 'SAVE_CURRENT_OBJECT':
             return {
                 ...state,
