@@ -1,11 +1,17 @@
 export type NodeId = number
 
+export type Color = string
+
 export type Point = {
     x: number
     y: number
 }
 
-export type Line = Point[]
+export type Line = {
+    points: Point[]
+    color: Color
+    strokeWidth: number
+}
 
 export type Frame = Line[]
 

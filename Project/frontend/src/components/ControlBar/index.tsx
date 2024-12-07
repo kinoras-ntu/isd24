@@ -1,56 +1,59 @@
 import type { FC } from 'react'
-import { Button, Dropdown, ListGroup, type ListGroupProps } from 'react-bootstrap'
+import { Button, Form, ListGroup, type ListGroupProps } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { faUser } from '@fortawesome/free-regular-svg-icons'
-import { faFlag } from '@fortawesome/free-solid-svg-icons'
+import { faPaperPlane, faUser } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-import type { State, Tool } from '@/types/state'
+import type { Color } from '@/types/drawing'
+import type { State } from '@/types/state'
 
 import StageButton from './StageButton'
+import StrokeWidthRadio from './StrokeWidthRadio'
+import ToolSelector from './ToolSelector'
 
-const tools: Tool[] = ['Binding', 'Trajectory']
+const { Item } = ListGroup
 
 const ControlBar: FC<ListGroupProps> = ({ ...restProps }) => {
-    const tool = useSelector((state: State) => state.tool)
     const outline = useSelector((state: State) => state.outline)
+    const color = useSelector((state: State) => state.color)
 
     const dispatch = useDispatch()
-    const setTool = (payload: Tool) => dispatch({ type: 'SET_TOOL', payload })
     const setOutline = (payload: boolean) => dispatch({ type: 'SET_OUTLINE', payload })
     const saveCurrentObject = () => dispatch({ type: 'SAVE_CURRENT_OBJECT' })
+    const setColor = (payload: Color) => dispatch({ type: 'SET_COLOR', payload })
 
     return (
         <ListGroup data-bs-theme="dark" horizontal {...restProps}>
-            <ListGroup.Item>
-                <Button variant={outline ? 'light' : 'outline-light'} onClick={() => setOutline(!outline)}>
-                    <FontAwesomeIcon icon={faUser} />
-                </Button>
-            </ListGroup.Item>
-            <ListGroup.Item style={{ display: 'flex', flex: 1, gap: '1rem' }}>
-                {/* Tool selector */}
-                <Dropdown>
-                    <Dropdown.Toggle variant="success" style={{ width: '9rem', display: 'flex', alignItems: 'center' }}>
-                        <FontAwesomeIcon icon={faFlag} style={{ marginRight: '0.5rem' }} />
-                        <span style={{ flex: 1, textAlign: 'left' }}>{tool}</span>
-                    </Dropdown.Toggle>
-                    <Dropdown.Menu style={{ minWidth: '9rem' }}>
-                        {tools.map((tool) => (
-                            <Dropdown.Item key={tool} onClick={() => setTool(tool)}>
-                                {tool}
-                            </Dropdown.Item>
-                        ))}
-                    </Dropdown.Menu>
-                </Dropdown>
-                {/* Stage selector */}
+            <Item style={{ display: 'flex', flex: 1, gap: '1rem' }}>
+                <ToolSelector />
                 <StageButton stage="Select" />
                 <StageButton stage="Draw" />
-            </ListGroup.Item>
-            <ListGroup.Item>
-                {/* Actions */}
-                <Button onClick={saveCurrentObject}>Save</Button>
-            </ListGroup.Item>
+                <span className="spacer" style={{ flex: 1 }} />
+                <Button variant="light" onClick={saveCurrentObject}>
+                    <FontAwesomeIcon icon={faPaperPlane} />
+                    <span style={{ marginLeft: 8 }}>Save</span>
+                </Button>
+            </Item>
+            <Item style={{ display: 'flex', gap: 16 }}>
+                <Form.Control
+                    type="color"
+                    value={color}
+                    onChange={(e) => setColor(e.currentTarget.value)}
+                    style={{ borderWidth: 2, padding: 4, width: 38 }}
+                />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <StrokeWidthRadio width={2} displaySize={16} />
+                    <StrokeWidthRadio width={4} displaySize={24} />
+                    <StrokeWidthRadio width={8} displaySize={32} />
+                </div>
+            </Item>
+            <Item>
+                <Button variant={outline ? 'light' : 'outline-light'} onClick={() => setOutline(!outline)}>
+                    <FontAwesomeIcon icon={faUser} />
+                    <span style={{ marginLeft: 8 }}>Outline</span>
+                </Button>
+            </Item>
         </ListGroup>
     )
 }

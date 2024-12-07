@@ -2,11 +2,13 @@ import { legacy_createStore as createStore } from 'redux'
 
 import { Action, State } from '@/types/state'
 
-import { defauleStage, defaultObject } from '@/constants/defaults'
+import { defaultColor, defaultObject, defaultStage, defaultStrokeWidth } from '@/constants/defaults'
 
 const initialState: State = {
     tool: 'Binding',
-    stage: defauleStage,
+    stage: defaultStage,
+    color: defaultColor,
+    strokeWidth: defaultStrokeWidth,
     outline: false,
     currentObject: structuredClone(defaultObject),
     finishedObjects: {
@@ -24,13 +26,17 @@ const reducer = (state: State = initialState, action: Action) => {
             return {
                 ...state,
                 tool: action.payload,
-                stage: defauleStage,
+                stage: defaultStage,
                 currentObject: structuredClone(defaultObject)
             }
         case 'SET_STAGE':
             return { ...state, stage: action.payload }
         case 'SET_CURRENT_OBJECT':
             return { ...state, currentObject: action.payload }
+        case 'SET_COLOR':
+            return { ...state, color: action.payload }
+        case 'SET_STROKE_WIDTH':
+            return { ...state, strokeWidth: action.payload }
         case 'SET_OUTLINE':
             return { ...state, outline: action.payload }
         case 'SAVE_CURRENT_OBJECT':

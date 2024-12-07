@@ -5,11 +5,10 @@ import { useDispatch, useSelector } from 'react-redux'
 import { faArrowPointer, faPen, faQuestion } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-import type { Stage, State, Tool } from '@/types/state'
+import type { Stage, State } from '@/types/state'
 
-interface StageButtonProps extends ButtonProps {
-    stage: Stage
-    activeTools?: Tool[]
+interface SaveButtonProps extends ButtonProps {
+    main: boolean
 }
 
 const Icon = {
@@ -18,7 +17,7 @@ const Icon = {
     Draw: faPen
 }
 
-const StageButton: FC<StageButtonProps> = ({ stage, activeTools, ...restProps }) => {
+const SaveButton: FC<SaveButtonProps> = ({ children, main, ...restProps }) => {
     const currentStage = useSelector((state: State) => state.stage)
 
     const dispatch = useDispatch()
@@ -26,15 +25,14 @@ const StageButton: FC<StageButtonProps> = ({ stage, activeTools, ...restProps })
 
     return (
         <Button
-            variant={stage === currentStage ? 'light' : 'outline-light'}
-            disabled={activeTools && !activeTools?.includes(useSelector((state: State) => state.tool))}
-            onClick={() => setStage(stage === currentStage ? 'Idle' : stage)}
+            variant={main ? 'light' : 'outline-light'}
+            // onClick={() => setStage(stage === currentStage ? 'Idle' : stage)}
             {...restProps}
         >
-            <FontAwesomeIcon icon={Icon[stage]} width={12} />
-            <span style={{ marginLeft: '0.5rem' }}>{stage}</span>
+            {/* <FontAwesomeIcon icon={Icon[stage]} width={12} /> */}
+            <span style={{ marginLeft: '0.5rem' }}>{children}</span>
         </Button>
     )
 }
 
-export default StageButton
+export default SaveButton

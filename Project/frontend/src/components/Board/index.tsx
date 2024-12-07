@@ -5,17 +5,16 @@ import { useDispatch, useSelector } from 'react-redux'
 import type { Node, NodeId, RCObject } from '@/types/drawing'
 import type { State } from '@/types/state'
 
-interface BoardProps extends HTMLAttributes<HTMLDivElement> {
+interface BoardProps extends HTMLAttributes<HTMLCanvasElement> {
     height: number
     width: number
 }
 
-const SERVER = 'http://localhost:5000'
-
 const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
     const tool = useSelector((state: State) => state.tool)
+    const currentColor = useSelector((state: State) => state.color)
+    const currentStrokeWidth = useSelector((state: State) => state.strokeWidth)
     const stage = useSelector((state: State) => state.stage)
-    const outline = useSelector((state: State) => state.outline)
     const currentObject = useSelector((state: State) => state.currentObject)
     const finishedObjects = useSelector((state: State) => state.finishedObjects)
 
@@ -74,14 +73,10 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
                 case 'Binding, Draw':
                     const frames = currentObject.frames
                     if (frames.length === 0) frames.push([])
-                    frames[0].push([{ x, y }])
+                    frames[0].push({ points: [{ x, y }], strokeWidth: currentStrokeWidth, color: currentColor })
                     setIsDrawing(true)
                     setCurrentObject({ ...currentObject, frames })
                     break
-                //     }
-                //     break
-                // case 'Trajectory':
-                //     break
                 default:
             }
         }
@@ -96,7 +91,7 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
             switch (`${tool}, ${stage}`) {
                 case 'Binding, Draw':
                     const frames = currentObject.frames
-                    frames[0][frames[0].length - 1].push({ x, y })
+                    frames[0][frames[0].length - 1].points.push({ x, y })
                     setCurrentObject({ ...currentObject, frames })
                     break
                 default:
@@ -110,30 +105,36 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
         ctx.clearRect(0, 0, canvasRef.current?.width ?? 0, canvasRef.current?.height ?? 0)
 
         // Draw current object
-        currentObject.frames[0]?.forEach((line) => {
-            if (!line[0]) return
-            ctx.beginPath()
-            ctx.moveTo(line[0].x, line[0].y)
-            for (let i = 1; i < line.length; i++) {
-                ctx.lineTo(line[i].x, line[i].y)
-            }
-            ctx.strokeStyle = 'red'
-            ctx.stroke()
+        currentObject.frames?.forEach((frame, index) => {
+            const opacity = index === currentObject.frames.length - 1 ? 'ff' : '7f'
+            frame.forEach((line) => {
+                if (!line.points[0]) return
+                ctx.lineWidth = line.strokeWidth
+                ctx.beginPath()
+                ctx.moveTo(line.points[0].x, line.points[0].y)
+                for (let i = 1; i < line.points.length; i++) {
+                    ctx.lineTo(line.points[i].x, line.points[i].y)
+                }
+                ctx.strokeStyle = `${line.color}${opacity}`
+                ctx.stroke()
+            })
         })
 
         // Draw finished objects
         finishedObjects.Binding.forEach((bindingObject) => {
             const node = nodes.find(({ nodeId }) => nodeId === bindingObject.nodeId[0])
+            const opacity = stage !== 'Draw' ? 'ff' : '7f'
             if (node) {
                 bindingObject.frames[0].forEach((line) => {
                     const offsetX = node.x - bindingObject.refPoint.x
                     const offsetY = node.y - bindingObject.refPoint.y
+                    ctx.lineWidth = line.strokeWidth
                     ctx.beginPath()
-                    ctx.moveTo(line[0].x + offsetX, line[0].y + offsetY)
-                    for (let i = 1; i < line.length; i++) {
-                        ctx.lineTo(line[i].x + offsetX, line[i].y + offsetY)
+                    ctx.moveTo(line.points[0].x + offsetX, line.points[0].y + offsetY)
+                    for (let i = 1; i < line.points.length; i++) {
+                        ctx.lineTo(line.points[i].x + offsetX, line.points[i].y + offsetY)
                     }
-                    ctx.strokeStyle = 'black'
+                    ctx.strokeStyle = `${line.color}${opacity}`
                     ctx.stroke()
                 })
             }
@@ -141,19 +142,16 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
     }
 
     return (
-        <div style={{ position: 'relative' }} {...restProps}>
-            <canvas
-                height={height}
-                width={width}
-                style={{ position: 'absolute', zIndex: 999 }}
-                ref={canvasRef}
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={() => setIsDrawing(false)}
-                onMouseLeave={() => setIsDrawing(false)}
-            />
-            <img src={`${SERVER}/video_feed?outline=${outline}`} style={{ height, width }} />
-        </div>
+        <canvas
+            height={height}
+            width={width}
+            ref={canvasRef}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={() => setIsDrawing(false)}
+            onMouseLeave={() => setIsDrawing(false)}
+            {...restProps}
+        />
     )
 }
 
