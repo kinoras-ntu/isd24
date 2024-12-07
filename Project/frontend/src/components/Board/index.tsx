@@ -12,6 +12,8 @@ interface BoardProps extends HTMLAttributes<HTMLCanvasElement> {
     width: number
 }
 
+const fps = 10
+
 const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
     const tool = useSelector((state: State) => state.tool)
     const stage = useSelector((state: State) => state.stage)
@@ -29,7 +31,7 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
     useEffect(() => setIsDrawing(false), [tool, stage])
     useEffect(() => drawObject(), [currentObject, nodeMaps, timer])
     useEffect(() => {
-        const fetchNodeRoutine = setInterval(() => fetchNodeMap(), 100)
+        const fetchNodeRoutine = setInterval(() => fetchNodeMap(), 1000 / fps)
         const timingRoutine = setInterval(() => setTimer((timer) => timer + 1), 250)
         return () => {
             clearInterval(fetchNodeRoutine)
@@ -42,7 +44,7 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
             const response = await fetch(`/nodes`)
             if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`)
             const newNodeMap = (await response.json()).nodes
-            setNodeMaps((nodeMaps) => [...nodeMaps, newNodeMap].slice(-20))
+            setNodeMaps((nodeMaps) => [...nodeMaps, newNodeMap].slice(-2 * fps))
         } catch (err) {
             console.error('Error fetching node positions:', err)
         }
@@ -163,9 +165,10 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
             if (node) frames[timer % frames.length].forEach((line) => drawLine(ctx, line, node, refNode[0]))
         })
 
-        finishedObjects.Trajectory.forEach(({ refNode, frames, localColor, localStrokeWidth }) => {
+        finishedObjects.Trajectory.forEach(({ refNode, localColor, localStrokeWidth }) => {
             const line: Line = {
                 points: nodeMaps
+                    .slice(0, nodeMaps.length - Math.round(fps / 2))
                     .map((nodeMap) => nodeMap.find(({ nodeId }) => nodeId === refNode[0].nodeId))
                     .map((node): Point => ({ x: node?.x ?? -1, y: node?.y ?? -1 }))
                     .filter(({ x, y }) => x !== -1 && y !== -1),
