@@ -19,6 +19,7 @@ const Icon = {
 }
 
 const StageButton: FC<StageButtonProps> = ({ stage, activeTools, ...restProps }) => {
+    if (activeTools && !activeTools?.includes(useSelector((state: State) => state.tool))) return <></>
     const currentStage = useSelector((state: State) => state.stage)
 
     const dispatch = useDispatch()
@@ -27,7 +28,6 @@ const StageButton: FC<StageButtonProps> = ({ stage, activeTools, ...restProps })
     return (
         <Button
             variant={stage === currentStage ? 'light' : 'outline-light'}
-            disabled={activeTools && !activeTools?.includes(useSelector((state: State) => state.tool))}
             onClick={() => setStage(stage === currentStage ? 'Idle' : stage)}
             {...restProps}
         >

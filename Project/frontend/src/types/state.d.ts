@@ -11,8 +11,8 @@ export type Action =
     | { type: 'SET_COLOR'; payload: Color }
     | { type: 'SET_STROKE_WIDTH'; payload: number }
     | { type: 'SET_OUTLINE'; payload: boolean }
+    | { type: 'SAVE_FRAME' }
     | { type: 'SAVE_CURRENT_OBJECT' }
-    | { type: 'SELECT'; payload: string }
     | { type: 'RESET' }
 
 export interface State {

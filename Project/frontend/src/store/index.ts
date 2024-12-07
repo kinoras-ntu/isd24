@@ -39,9 +39,18 @@ const reducer = (state: State = initialState, action: Action) => {
             return { ...state, strokeWidth: action.payload }
         case 'SET_OUTLINE':
             return { ...state, outline: action.payload }
+        case 'SAVE_FRAME':
+            return {
+                ...state,
+                currentObject: {
+                    ...state.currentObject,
+                    frames: [...state.currentObject.frames, []]
+                }
+            }
         case 'SAVE_CURRENT_OBJECT':
             return {
                 ...state,
+                stage: defaultStage,
                 currentObject: structuredClone(defaultObject),
                 finishedObjects: {
                     ...state.finishedObjects,

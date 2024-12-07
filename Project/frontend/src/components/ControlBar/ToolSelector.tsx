@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import type { State, Tool } from '@/types/state'
 
-const tools: Tool[] = ['Binding', 'Trajectory']
+const tools: Tool[] = ['Binding', 'Flipbook', 'Trajectory', 'Triggering']
 
 const { Toggle, Menu, Item } = Dropdown
 

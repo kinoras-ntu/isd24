@@ -27,7 +27,7 @@ const StrokeWidthRadio: FC<StrokeWidthRadioProps> = ({ width, displaySize, ...re
                 height: displaySize,
                 padding: 0,
                 borderRadius: displaySize,
-                backgroundColor: active ? '#ffffffff' : '#ffffff00',
+                backgroundColor: active ? '#ffffff' : '#495057',
                 borderColor: '#495057',
                 borderWidth: 2
             }}

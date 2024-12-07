@@ -2,8 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import type { FC, HTMLAttributes, MouseEventHandler } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
-import type { Node, NodeId, RCObject } from '@/types/drawing'
+import type { Line, Node, RCObject } from '@/types/drawing'
 import type { State } from '@/types/state'
+
+import { defaultNode } from '@/constants/defaults'
 
 interface BoardProps extends HTMLAttributes<HTMLCanvasElement> {
     height: number
@@ -24,12 +26,17 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const [isDrawing, setIsDrawing] = useState<Boolean>(false)
     const [nodes, setNodes] = useState<Node[]>([])
+    const [timer, setTimer] = useState<number>(0)
 
     useEffect(() => setIsDrawing(false), [tool, stage])
-    useEffect(() => drawObject(), [currentObject, nodes])
+    useEffect(() => drawObject(), [currentObject, nodes, timer])
     useEffect(() => {
         const fetchNodeRoutine = setInterval(() => fetchNodes(), 100)
-        return () => clearInterval(fetchNodeRoutine)
+        const timingRoutine = setInterval(() => setTimer((timer) => timer + 1), 250)
+        return () => {
+            clearInterval(fetchNodeRoutine)
+            clearInterval(timingRoutine)
+        }
     }, [])
 
     const fetchNodes = async () => {
@@ -42,17 +49,17 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
         }
     }
 
-    const getNearestNode = (x: number, y: number): NodeId => {
-        let index: NodeId = -1
+    const getNearestNode = (x: number, y: number): Node => {
+        let retNode: Node = defaultNode
         let minDistance: number = Infinity
         nodes.forEach((node) => {
             const distance: number = Math.sqrt(Math.pow(node.x - x, 2) + Math.pow(node.y - y, 2))
             if (distance < minDistance) {
                 minDistance = distance
-                index = node.nodeId
+                retNode = structuredClone(node)
             }
         })
-        return index
+        return retNode
     }
 
     const handleMouseDown: MouseEventHandler<HTMLCanvasElement> = (e) => {
@@ -62,18 +69,26 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
             const y = e.clientY - rect.top
             switch (`${tool}, ${stage}`) {
                 case 'Binding, Select':
-                    const nodeId = getNearestNode(x, y)
-                    const node = nodes.find((node) => node.nodeId == nodeId)
+                case 'Flipbook, Select':
                     setCurrentObject({
                         ...currentObject,
-                        nodeId: [nodeId],
-                        refPoint: { x: node?.x ?? 0, y: node?.y ?? 0 }
+                        refNode: [getNearestNode(x, y)]
+                    })
+                    break
+                case 'Triggering, Select':
+                    setCurrentObject({
+                        ...currentObject,
+                        refNode: [...currentObject.refNode, getNearestNode(x, y)].slice(-2)
                     })
                     break
                 case 'Binding, Draw':
+                case 'Flipbook, Draw':
                     const frames = currentObject.frames
-                    if (frames.length === 0) frames.push([])
-                    frames[0].push({ points: [{ x, y }], strokeWidth: currentStrokeWidth, color: currentColor })
+                    frames[frames.length - 1].push({
+                        points: [{ x, y }],
+                        strokeWidth: currentStrokeWidth,
+                        color: currentColor
+                    })
                     setIsDrawing(true)
                     setCurrentObject({ ...currentObject, frames })
                     break
@@ -90,13 +105,28 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
             const y = e.clientY - rect.top
             switch (`${tool}, ${stage}`) {
                 case 'Binding, Draw':
+                case 'Flipbook, Draw':
                     const frames = currentObject.frames
-                    frames[0][frames[0].length - 1].points.push({ x, y })
+                    frames[frames.length - 1][frames[frames.length - 1].length - 1].points.push({ x, y })
                     setCurrentObject({ ...currentObject, frames })
                     break
                 default:
             }
         }
+    }
+
+    const drawLine = (ctx: CanvasRenderingContext2D, line: Line, node: Node, refNode: Node) => {
+        const foOpacity = stage !== 'Draw' ? 'ff' : '7f'
+        const offsetX = node.x - refNode.x
+        const offsetY = node.y - refNode.y
+        ctx.lineWidth = line.strokeWidth
+        ctx.beginPath()
+        ctx.moveTo(line.points[0].x + offsetX, line.points[0].y + offsetY)
+        for (let i = 1; i < line.points.length; i++) {
+            ctx.lineTo(line.points[i].x + offsetX, line.points[i].y + offsetY)
+        }
+        ctx.strokeStyle = `${line.color}${foOpacity}`
+        ctx.stroke()
     }
 
     const drawObject = () => {
@@ -105,6 +135,7 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
         ctx.clearRect(0, 0, canvasRef.current?.width ?? 0, canvasRef.current?.height ?? 0)
 
         // Draw current object
+
         currentObject.frames?.forEach((frame, index) => {
             const opacity = index === currentObject.frames.length - 1 ? 'ff' : '7f'
             frame.forEach((line) => {
@@ -121,23 +152,15 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
         })
 
         // Draw finished objects
-        finishedObjects.Binding.forEach((bindingObject) => {
-            const node = nodes.find(({ nodeId }) => nodeId === bindingObject.nodeId[0])
-            const opacity = stage !== 'Draw' ? 'ff' : '7f'
-            if (node) {
-                bindingObject.frames[0].forEach((line) => {
-                    const offsetX = node.x - bindingObject.refPoint.x
-                    const offsetY = node.y - bindingObject.refPoint.y
-                    ctx.lineWidth = line.strokeWidth
-                    ctx.beginPath()
-                    ctx.moveTo(line.points[0].x + offsetX, line.points[0].y + offsetY)
-                    for (let i = 1; i < line.points.length; i++) {
-                        ctx.lineTo(line.points[i].x + offsetX, line.points[i].y + offsetY)
-                    }
-                    ctx.strokeStyle = `${line.color}${opacity}`
-                    ctx.stroke()
-                })
-            }
+
+        finishedObjects.Binding.forEach(({ refNode, frames }) => {
+            const node = nodes.find(({ nodeId }) => nodeId === refNode[0].nodeId)
+            if (node) frames[0].forEach((line) => drawLine(ctx, line, node, refNode[0]))
+        })
+
+        finishedObjects.Flipbook.forEach(({ refNode, frames }) => {
+            const node = nodes.find(({ nodeId }) => nodeId === refNode[0].nodeId)
+            if (node) frames[timer % frames.length].forEach((line) => drawLine(ctx, line, node, refNode[0]))
         })
     }
 

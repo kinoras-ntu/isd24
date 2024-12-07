@@ -20,7 +20,6 @@ export interface Node extends Point {
 }
 
 export interface RCObject {
-    nodeId: NodeId[]
-    refPoint: Point
+    refNode: Node[]
     frames: Frame[]
 }

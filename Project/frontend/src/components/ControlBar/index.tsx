@@ -2,7 +2,7 @@ import type { FC } from 'react'
 import { Button, Form, ListGroup, type ListGroupProps } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { faPaperPlane, faUser } from '@fortawesome/free-solid-svg-icons'
+import { faPaperPlane, faPlus, faUser } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import type { Color } from '@/types/drawing'
@@ -15,21 +15,32 @@ import ToolSelector from './ToolSelector'
 const { Item } = ListGroup
 
 const ControlBar: FC<ListGroupProps> = ({ ...restProps }) => {
+    const tool = useSelector((state: State) => state.tool)
     const outline = useSelector((state: State) => state.outline)
     const color = useSelector((state: State) => state.color)
+    const currentObject = useSelector((state: State) => state.currentObject)
 
     const dispatch = useDispatch()
     const setOutline = (payload: boolean) => dispatch({ type: 'SET_OUTLINE', payload })
-    const saveCurrentObject = () => dispatch({ type: 'SAVE_CURRENT_OBJECT' })
     const setColor = (payload: Color) => dispatch({ type: 'SET_COLOR', payload })
+    const saveCurrentObject = () => dispatch({ type: 'SAVE_CURRENT_OBJECT' })
+    const saveFrame = () => dispatch({ type: 'SAVE_FRAME' })
+
+    const canDraw = (tool === 'Triggering' && currentObject.refNode.length === 2) || currentObject.refNode.length === 1
 
     return (
         <ListGroup data-bs-theme="dark" horizontal {...restProps}>
             <Item style={{ display: 'flex', flex: 1, gap: '1rem' }}>
                 <ToolSelector />
                 <StageButton stage="Select" />
-                <StageButton stage="Draw" />
+                <StageButton stage="Draw" disabled={!canDraw} />
                 <span className="spacer" style={{ flex: 1 }} />
+                {tool === 'Flipbook' && (
+                    <Button variant="outline-light" onClick={saveFrame}>
+                        <FontAwesomeIcon icon={faPlus} />
+                        <span style={{ marginLeft: 8 }}>Frame</span>
+                    </Button>
+                )}
                 <Button variant="light" onClick={saveCurrentObject}>
                     <FontAwesomeIcon icon={faPaperPlane} />
                     <span style={{ marginLeft: 8 }}>Save</span>
