@@ -14,6 +14,8 @@ export const defaultNode: Node = {
 }
 
 export const defaultObject: RCObject = {
+    localColor: defaultColor,
+    localStrokeWidth: defaultStrokeWidth,
     refNode: [],
     frames: [[]]
 }

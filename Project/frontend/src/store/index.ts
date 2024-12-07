@@ -27,16 +27,28 @@ const reducer = (state: State = initialState, action: Action) => {
                 ...state,
                 tool: action.payload,
                 stage: defaultStage,
-                currentObject: structuredClone(defaultObject)
+                currentObject: {
+                    ...structuredClone(defaultObject),
+                    localColor: state.color,
+                    localStrokeWidth: state.strokeWidth
+                }
             }
         case 'SET_STAGE':
             return { ...state, stage: action.payload }
         case 'SET_CURRENT_OBJECT':
             return { ...state, currentObject: action.payload }
         case 'SET_COLOR':
-            return { ...state, color: action.payload }
+            return {
+                ...state,
+                color: action.payload,
+                currentObject: { ...state.currentObject, localColor: action.payload }
+            }
         case 'SET_STROKE_WIDTH':
-            return { ...state, strokeWidth: action.payload }
+            return {
+                ...state,
+                strokeWidth: action.payload,
+                currentObject: { ...state.currentObject, localStrokeWidth: action.payload }
+            }
         case 'SET_OUTLINE':
             return { ...state, outline: action.payload }
         case 'SAVE_FRAME':
@@ -51,7 +63,11 @@ const reducer = (state: State = initialState, action: Action) => {
             return {
                 ...state,
                 stage: defaultStage,
-                currentObject: structuredClone(defaultObject),
+                currentObject: {
+                    ...structuredClone(defaultObject),
+                    localColor: state.color,
+                    localStrokeWidth: state.strokeWidth
+                },
                 finishedObjects: {
                     ...state.finishedObjects,
                     [state.tool]: [...state.finishedObjects[state.tool], state.currentObject]

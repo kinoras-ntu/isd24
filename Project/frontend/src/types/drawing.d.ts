@@ -20,6 +20,8 @@ export interface Node extends Point {
 }
 
 export interface RCObject {
+    localColor: Color
+    localStrokeWidth: number
     refNode: Node[]
     frames: Frame[]
 }

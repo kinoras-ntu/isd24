@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { FC, HTMLAttributes, MouseEventHandler } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
-import type { Line, Node, RCObject } from '@/types/drawing'
+import type { Line, Node, Point, RCObject } from '@/types/drawing'
 import type { State } from '@/types/state'
 
 import { defaultNode } from '@/constants/defaults'
@@ -14,8 +14,6 @@ interface BoardProps extends HTMLAttributes<HTMLCanvasElement> {
 
 const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
     const tool = useSelector((state: State) => state.tool)
-    const currentColor = useSelector((state: State) => state.color)
-    const currentStrokeWidth = useSelector((state: State) => state.strokeWidth)
     const stage = useSelector((state: State) => state.stage)
     const currentObject = useSelector((state: State) => state.currentObject)
     const finishedObjects = useSelector((state: State) => state.finishedObjects)
@@ -25,13 +23,13 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
 
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const [isDrawing, setIsDrawing] = useState<Boolean>(false)
-    const [nodes, setNodes] = useState<Node[]>([])
+    const [nodeMaps, setNodeMaps] = useState<Node[][]>([])
     const [timer, setTimer] = useState<number>(0)
 
     useEffect(() => setIsDrawing(false), [tool, stage])
-    useEffect(() => drawObject(), [currentObject, nodes, timer])
+    useEffect(() => drawObject(), [currentObject, nodeMaps, timer])
     useEffect(() => {
-        const fetchNodeRoutine = setInterval(() => fetchNodes(), 100)
+        const fetchNodeRoutine = setInterval(() => fetchNodeMap(), 100)
         const timingRoutine = setInterval(() => setTimer((timer) => timer + 1), 250)
         return () => {
             clearInterval(fetchNodeRoutine)
@@ -39,11 +37,12 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
         }
     }, [])
 
-    const fetchNodes = async () => {
+    const fetchNodeMap = async () => {
         try {
             const response = await fetch(`/nodes`)
             if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`)
-            setNodes((await response.json()).nodes)
+            const newNodeMap = (await response.json()).nodes
+            setNodeMaps((nodeMaps) => [...nodeMaps, newNodeMap].slice(-20))
         } catch (err) {
             console.error('Error fetching node positions:', err)
         }
@@ -52,7 +51,7 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
     const getNearestNode = (x: number, y: number): Node => {
         let retNode: Node = defaultNode
         let minDistance: number = Infinity
-        nodes.forEach((node) => {
+        nodeMaps[nodeMaps.length - 1]?.forEach((node) => {
             const distance: number = Math.sqrt(Math.pow(node.x - x, 2) + Math.pow(node.y - y, 2))
             if (distance < minDistance) {
                 minDistance = distance
@@ -70,6 +69,7 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
             switch (`${tool}, ${stage}`) {
                 case 'Binding, Select':
                 case 'Flipbook, Select':
+                case 'Trajectory, Select':
                     setCurrentObject({
                         ...currentObject,
                         refNode: [getNearestNode(x, y)]
@@ -86,8 +86,8 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
                     const frames = currentObject.frames
                     frames[frames.length - 1].push({
                         points: [{ x, y }],
-                        strokeWidth: currentStrokeWidth,
-                        color: currentColor
+                        color: currentObject.localColor,
+                        strokeWidth: currentObject.localStrokeWidth
                     })
                     setIsDrawing(true)
                     setCurrentObject({ ...currentObject, frames })
@@ -154,13 +154,25 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
         // Draw finished objects
 
         finishedObjects.Binding.forEach(({ refNode, frames }) => {
-            const node = nodes.find(({ nodeId }) => nodeId === refNode[0].nodeId)
+            const node = nodeMaps[nodeMaps.length - 1]?.find(({ nodeId }) => nodeId === refNode[0].nodeId)
             if (node) frames[0].forEach((line) => drawLine(ctx, line, node, refNode[0]))
         })
 
         finishedObjects.Flipbook.forEach(({ refNode, frames }) => {
-            const node = nodes.find(({ nodeId }) => nodeId === refNode[0].nodeId)
+            const node = nodeMaps[nodeMaps.length - 1]?.find(({ nodeId }) => nodeId === refNode[0].nodeId)
             if (node) frames[timer % frames.length].forEach((line) => drawLine(ctx, line, node, refNode[0]))
+        })
+
+        finishedObjects.Trajectory.forEach(({ refNode, frames, localColor, localStrokeWidth }) => {
+            const line: Line = {
+                points: nodeMaps
+                    .map((nodeMap) => nodeMap.find(({ nodeId }) => nodeId === refNode[0].nodeId))
+                    .map((node): Point => ({ x: node?.x ?? -1, y: node?.y ?? -1 }))
+                    .filter(({ x, y }) => x !== -1 && y !== -1),
+                strokeWidth: localStrokeWidth,
+                color: localColor
+            }
+            drawLine(ctx, line, defaultNode, defaultNode)
         })
     }
 
