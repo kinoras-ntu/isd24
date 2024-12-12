@@ -156,12 +156,12 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
         // Draw finished objects
 
         finishedObjects.Binding.forEach(({ refNode, frames }) => {
-            const node = nodeMaps[nodeMaps.length - 1]?.find(({ nodeId }) => nodeId === refNode[0].nodeId)
+            const node = nodeMaps[nodeMaps.length - 1]?.find(({ nodeId }) => nodeId === refNode[0]?.nodeId)
             if (node) frames[0].forEach((line) => drawLine(ctx, line, node, refNode[0]))
         })
 
         finishedObjects.Flipbook.forEach(({ refNode, frames }) => {
-            const node = nodeMaps[nodeMaps.length - 1]?.find(({ nodeId }) => nodeId === refNode[0].nodeId)
+            const node = nodeMaps[nodeMaps.length - 1]?.find(({ nodeId }) => nodeId === refNode[0]?.nodeId)
             if (node) frames[timer % frames.length].forEach((line) => drawLine(ctx, line, node, refNode[0]))
         })
 
@@ -169,7 +169,7 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
             const line: Line = {
                 points: nodeMaps
                     .slice(0, nodeMaps.length - Math.round(fps / 2))
-                    .map((nodeMap) => nodeMap.find(({ nodeId }) => nodeId === refNode[0].nodeId))
+                    .map((nodeMap) => nodeMap.find(({ nodeId }) => nodeId === refNode[0]?.nodeId))
                     .map((node): Point => ({ x: node?.x ?? -1, y: node?.y ?? -1 }))
                     .filter(({ x, y }) => x !== -1 && y !== -1),
                 strokeWidth: localStrokeWidth,
@@ -178,7 +178,7 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
             drawLine(ctx, line, defaultNode, defaultNode)
         })
     }
-
+    
     return (
         <canvas
             height={height}
