@@ -52,9 +52,9 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
 
     const getNearestNode = (x: number, y: number): Node => {
         let retNode: Node = defaultNode
-        let minDistance: number = Infinity
+        let minDistance = Infinity
         nodeMaps[nodeMaps.length - 1]?.forEach((node) => {
-            const distance: number = Math.sqrt(Math.pow(node.x - x, 2) + Math.pow(node.y - y, 2))
+            const distance = Math.sqrt(Math.pow(node.x - x, 2) + Math.pow(node.y - y, 2))
             if (distance < minDistance) {
                 minDistance = distance
                 retNode = structuredClone(node)
@@ -85,6 +85,7 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
                     break
                 case 'Binding, Draw':
                 case 'Flipbook, Draw':
+                case 'Triggering, Draw':
                     const frames = currentObject.frames
                     frames[frames.length - 1].push({
                         points: [{ x, y }],
@@ -108,6 +109,7 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
             switch (`${tool}, ${stage}`) {
                 case 'Binding, Draw':
                 case 'Flipbook, Draw':
+                case 'Triggering, Draw':
                     const frames = currentObject.frames
                     frames[frames.length - 1][frames[frames.length - 1].length - 1].points.push({ x, y })
                     setCurrentObject({ ...currentObject, frames })
@@ -156,12 +158,12 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
         // Draw finished objects
 
         finishedObjects.Binding.forEach(({ refNode, frames }) => {
-            const node = nodeMaps[nodeMaps.length - 1]?.find(({ nodeId }) => nodeId === refNode[0]?.nodeId)
+            const node = nodeMaps.slice(-1)[0]?.find(({ nodeId }) => nodeId === refNode[0]?.nodeId)
             if (node) frames[0].forEach((line) => drawLine(ctx, line, node, refNode[0]))
         })
 
         finishedObjects.Flipbook.forEach(({ refNode, frames }) => {
-            const node = nodeMaps[nodeMaps.length - 1]?.find(({ nodeId }) => nodeId === refNode[0]?.nodeId)
+            const node = nodeMaps.slice(-1)[0]?.find(({ nodeId }) => nodeId === refNode[0]?.nodeId)
             if (node) frames[timer % frames.length].forEach((line) => drawLine(ctx, line, node, refNode[0]))
         })
 
@@ -177,8 +179,17 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
             }
             drawLine(ctx, line, defaultNode, defaultNode)
         })
+
+        finishedObjects.Triggering.forEach(({ refNode, frames }) => {
+            const [node1, node2] = refNode.map(({ nodeId }) => nodeMaps.slice(-1)[0]?.find((n) => n.nodeId === nodeId))
+            const distance = node1 && node2 ? Math.hypot(node2.x - node1.x, node2.y - node1.y) : Infinity
+            if (distance < 80) {
+                const node = nodeMaps[nodeMaps.length - 1]?.find(({ nodeId }) => nodeId === refNode[0]?.nodeId)
+                if (node) frames[0].forEach((line) => drawLine(ctx, line, node, refNode[0]))
+            }
+        })
     }
-    
+
     return (
         <canvas
             height={height}

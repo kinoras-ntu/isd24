@@ -26,14 +26,16 @@ const ControlBar: FC<ListGroupProps> = ({ ...restProps }) => {
     const saveCurrentObject = () => dispatch({ type: 'SAVE_CURRENT_OBJECT' })
     const saveFrame = () => dispatch({ type: 'SAVE_FRAME' })
 
-    const canDraw = (tool === 'Triggering' && currentObject.refNode.length === 2) || currentObject.refNode.length === 1
+    const canDraw =
+        (tool === 'Triggering' && currentObject.refNode.length === 2) ||
+        (tool !== 'Triggering' && currentObject.refNode.length === 1)
 
     return (
         <ListGroup data-bs-theme="dark" horizontal {...restProps}>
             <Item style={{ display: 'flex', flex: 1, gap: '1rem' }}>
                 <ToolSelector />
                 <StageButton stage="Select" />
-                <StageButton stage="Draw" disabled={!canDraw} activeTools={['Binding', 'Flipbook']} />
+                <StageButton stage="Draw" disabled={!canDraw} activeTools={['Binding', 'Flipbook', 'Triggering']} />
                 <span className="spacer" style={{ flex: 1 }} />
                 {tool === 'Flipbook' && (
                     <Button variant="outline-light" onClick={saveFrame}>
