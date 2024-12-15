@@ -1,4 +1,4 @@
-export const poseLandmarks = {
+export const poseLandmarks: {[key: number]: string} = {
     0: 'Nose',
     1: 'Left Eye (Inner)',
     2: 'Left Eye',

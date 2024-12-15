@@ -18,7 +18,7 @@ const ToolSelector: FC<Omit<DropdownProps, 'children'>> = ({ ...restProps }) => 
     const setTool = (payload: Tool) => dispatch({ type: 'SET_TOOL', payload })
     return (
         <Dropdown {...restProps}>
-            <Toggle variant="success" style={{ width: '9rem', display: 'flex', alignItems: 'center' }}>
+            <Toggle style={{ width: '9rem', display: 'flex', alignItems: 'center' }}>
                 <FontAwesomeIcon icon={faFlag} style={{ marginRight: '0.5rem' }} />
                 <span style={{ flex: 1, textAlign: 'left' }}>{tool}</span>
             </Toggle>

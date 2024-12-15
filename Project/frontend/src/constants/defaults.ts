@@ -1,4 +1,4 @@
-import type { Line, Node, RCObject } from '@/types/drawing'
+import type { Node, RCObject } from '@/types/drawing'
 import type { Stage } from '@/types/state'
 
 export const defaultStrokeWidth = 2

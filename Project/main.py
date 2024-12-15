@@ -1,14 +1,14 @@
 import cv2
 import numpy as np
 import pyrealsense2 as rs
-from flask import Flask, render_template, Response, request, jsonify
+from flask import Flask, Response, request, jsonify
 from flask_socketio import SocketIO
 from mpipe import MediaPipe
 
 
 USE_REALSENSE = True
 HOST, PORT = "127.0.0.1", 5000
-WIDTH, HEIGHT, FPS = 640, 480, 30
+WIDTH, HEIGHT, FPS = 1280, 720, 30
 
 latest_results = None
 
@@ -33,8 +33,7 @@ if USE_REALSENSE:
     config.enable_stream(rs.stream.depth, WIDTH, HEIGHT, rs.format.z16, FPS)
     config.enable_stream(rs.stream.color, WIDTH, HEIGHT, rs.format.bgr8, FPS)
     pipeline.start(config)
-    align_to = rs.stream.color
-    align = rs.align(align_to)
+    align = rs.align(rs.stream.color)
 else:
     cap = cv2.VideoCapture(0)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, WIDTH)
@@ -46,7 +45,7 @@ app = Flask(__name__)
 socketio = SocketIO(app)
 
 # MediaPipe
-mp = MediaPipe()
+mp = MediaPipe(use_holistic=False)
 
 
 ###############  Functions  ###############
@@ -60,11 +59,13 @@ def generate_frames(outline: bool = False):
                 # RealSense: Wait for the depth and the color frame
                 frames = pipeline.wait_for_frames()
                 aligned_frames = align.process(frames)
-                color_frame = aligned_frames.get_color_frame()
+                color_frame = aligned_frames.first(rs.stream.color)
                 depth_frame = aligned_frames.get_depth_frame()
                 if not color_frame or not depth_frame:
                     continue
                 color_image = np.asanyarray(color_frame.get_data())
+                depth_image = np.asanyarray(depth_frame.get_data())
+                depth_mask = depth_image.astype(np.uint8)
             else:
                 # Webcam: Capture frames
                 ret, color_image = cap.read()
@@ -84,6 +85,12 @@ def generate_frames(outline: bool = False):
                 # Threshold the mask to create a binary image
                 mask = (segmentation_mask > 0.1).astype(np.uint8) * 255
 
+                if False:
+                    kernel = np.ones((5, 5), np.uint8)
+                    mask = cv2.bitwise_and(mask, depth_mask)
+                    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+                    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+                    
                 # Find contours on the mask
                 contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -101,10 +108,6 @@ def generate_frames(outline: bool = False):
 
 
 ###############  Routes  ###############
-
-@app.route('/')
-def index():
-    return render_template('index.html')
 
 
 @app.route('/video_feed')
