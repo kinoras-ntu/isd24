@@ -30,7 +30,8 @@ const ControlBar: FC<ListGroupProps> = ({ ...restProps }) => {
         (tool === 'Triggering' && currentObject.refNode.length === 2) ||
         (tool !== 'Triggering' && currentObject.refNode.length === 1)
 
-    const canSave = canDraw && currentObject.frames.reduce((count, frame) => count + frame.length, 0)
+    const canSave =
+        canDraw && (tool === 'Trajectory' || currentObject.frames.reduce((count, frame) => count + frame.length, 0))
 
     return (
         <ListGroup data-bs-theme="dark" horizontal {...restProps}>

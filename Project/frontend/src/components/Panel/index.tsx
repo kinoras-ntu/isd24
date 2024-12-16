@@ -5,8 +5,9 @@ import { useDispatch, useSelector } from 'react-redux'
 import type { ObjectId } from '@/types/drawing'
 import type { State } from '@/types/state'
 
+import FrameEntry from './Frame'
 import PanelItem from './Item'
-import Object from './Object'
+import ObjectEntry from './Object'
 
 const Panel: FC<ListGroupProps> = ({ ...restProps }) => {
     const tool = useSelector((state: State) => state.tool)
@@ -26,11 +27,19 @@ const Panel: FC<ListGroupProps> = ({ ...restProps }) => {
     return (
         <ListGroup data-bs-theme="dark" style={{ display: 'flex', flexDirection: 'column' }} {...restProps}>
             <PanelItem name="Current Drawing">
-                <Object object={currentObject} isCurrent />
+                <ObjectEntry object={currentObject} isCurrent>
+                    {tool === 'Flipbook' && (
+                        <ListGroup style={{ marginBlock: 4 }}>
+                            {currentObject.frames.map((frame, index) => (
+                                <FrameEntry key={index} index={index} frame={frame} />
+                            ))}
+                        </ListGroup>
+                    )}
+                </ObjectEntry>
             </PanelItem>
             <PanelItem name="Finished Drawings" style={{ flex: 1 }}>
                 {finishedObjects.map((object) => (
-                    <Object
+                    <ObjectEntry
                         key={object.id}
                         object={object}
                         onEditClick={() => handleEditClick(object.id)}
