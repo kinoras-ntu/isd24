@@ -12,6 +12,7 @@ const initialState: State = {
     outline: false,
     isolatedObjectId: undefined,
     currentObject: createDefaultObject(),
+    currentFrameIndex: 0,
     finishedObjects: {
         Binding: [],
         Trajectory: [],
@@ -55,6 +56,7 @@ const reducer = (state: State = initialState, action: Action) => {
         case 'SAVE_FRAME':
             return {
                 ...state,
+                currentFrameIndex: state.currentFrameIndex + 1,
                 currentObject: {
                     ...state.currentObject,
                     frames: [...state.currentObject.frames, []]
@@ -64,6 +66,7 @@ const reducer = (state: State = initialState, action: Action) => {
             return {
                 ...state,
                 stage: defaultStage,
+                currentFrameIndex: 0,
                 currentObject: {
                     ...createDefaultObject(),
                     localColor: state.color,
@@ -77,9 +80,21 @@ const reducer = (state: State = initialState, action: Action) => {
                     ]
                 }
             }
+        case 'SET_CURRENT_FRAME':
+            return { ...state, currentFrameIndex: action.payload }
+        case 'DELETE_CURRENT_OBJECT_FRAME':
+            return {
+                ...state,
+                currentFrameIndex: action.payload <= state.currentFrameIndex ? state.currentFrameIndex - 1 : state.currentFrameIndex,
+                currentObject: {
+                    ...state.currentObject,
+                    frames: state.currentObject.frames.filter((_, i) => i !== action.payload)
+                }
+            }
         case 'EDIT_OBJECT':
             return {
                 ...state,
+                currentFrameIndex: 0,
                 currentObject:
                     state.finishedObjects[state.tool].find(({ id }) => id === action.payload) ?? createDefaultObject()
             }

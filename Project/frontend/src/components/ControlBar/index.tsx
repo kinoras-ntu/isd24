@@ -40,12 +40,6 @@ const ControlBar: FC<ListGroupProps> = ({ ...restProps }) => {
                 <StageButton stage="Select" />
                 <StageButton stage="Draw" disabled={!canDraw} activeTools={['Binding', 'Flipbook', 'Triggering']} />
                 <span className="spacer" style={{ flex: 1 }} />
-                {tool === 'Flipbook' && (
-                    <Button className="btn-nohover" variant="outline-light" onClick={saveFrame} disabled={!canDraw}>
-                        <FontAwesomeIcon icon={faPlus} />
-                        <span style={{ marginLeft: 8 }}>Frame</span>
-                    </Button>
-                )}
                 <Button className="btn-nohover" variant="light" onClick={saveCurrentObject} disabled={!canSave}>
                     <FontAwesomeIcon icon={faPaperPlane} />
                     <span style={{ marginLeft: 8 }}>Save</span>

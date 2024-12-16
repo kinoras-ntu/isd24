@@ -23,6 +23,7 @@ const Board: FC<BoardProps> = ({ height, width, style, ...restProps }) => {
     const tool = useSelector((state: State) => state.tool)
     const stage = useSelector((state: State) => state.stage)
     const currentObject = useSelector((state: State) => state.currentObject)
+    const currentFrameIndex = useSelector((state: State) => state.currentFrameIndex)
     const finishedObjects = useSelector((state: State) => state.finishedObjects)
     const isolatedObjectId = useSelector((state: State) => state.isolatedObjectId)
 
@@ -94,7 +95,7 @@ const Board: FC<BoardProps> = ({ height, width, style, ...restProps }) => {
                 case 'Flipbook, Draw':
                 case 'Triggering, Draw':
                     const frames = currentObject.frames
-                    frames[frames.length - 1].push({
+                    frames[currentFrameIndex].push({
                         points: [{ x, y }],
                         color: currentObject.localColor,
                         strokeWidth: currentObject.localStrokeWidth
@@ -118,7 +119,7 @@ const Board: FC<BoardProps> = ({ height, width, style, ...restProps }) => {
                 case 'Flipbook, Draw':
                 case 'Triggering, Draw':
                     const frames = currentObject.frames
-                    frames[frames.length - 1][frames[frames.length - 1].length - 1].points.push({ x, y })
+                    frames[currentFrameIndex][frames[currentFrameIndex].length - 1].points.push({ x, y })
                     setCurrentObject({ ...currentObject, frames })
                     break
                 default:
@@ -150,7 +151,7 @@ const Board: FC<BoardProps> = ({ height, width, style, ...restProps }) => {
         // Draw current object
 
         currentObject.frames?.forEach((frame, index) => {
-            const opacity = index === currentObject.frames.length - 1 ? 'ff' : '7f'
+            const opacity = index === currentFrameIndex ? 'ff' : '7f'
             frame.forEach((line) => {
                 if (!line.points[0]) return
                 ctx.lineWidth = line.strokeWidth

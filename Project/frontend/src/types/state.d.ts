@@ -13,6 +13,8 @@ export type Action =
     | { type: 'SET_OUTLINE'; payload: boolean }
     | { type: 'SAVE_FRAME' }
     | { type: 'SAVE_CURRENT_OBJECT' }
+    | { type: 'SET_CURRENT_FRAME'; payload: number }
+    | { type: 'DELETE_CURRENT_OBJECT_FRAME'; payload: number }
     | { type: 'EDIT_OBJECT'; payload: ObjectId }
     | { type: 'ISOLATE_OBJECT'; payload: ObjectId }
     | { type: 'DELETE_OBJECT'; payload: ObjectId }
@@ -26,6 +28,7 @@ export interface State {
     outline: boolean
     isolatedObjectId: ObjectId | undefined
     currentObject: RCObject
+    currentFrameIndex: number
     finishedObjects: {
         Binding: RCObject[]
         Trajectory: RCObject[]

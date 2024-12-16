@@ -6,7 +6,7 @@ import Panel from '@/components/Panel'
 import Screen from '@/components/Screen'
 
 const App: FC = () => {
-    const [height, width] = [720, 1080]
+    const [height, width] = [720, 1280]
 
     return (
         <div id="app" style={{ display: 'flex', gap: 16, margin: 16 }}>

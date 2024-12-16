@@ -34,18 +34,16 @@ const ObjectEntry: FC<ObjectEntryProps> = ({
     const isolatedObjectId = useSelector((state: State) => state.isolatedObjectId)
 
     const lineCount = frames.reduce((count, frame) => count + frame.length, 0)
-    const nodeNames = refNode.map(({ nodeId }) => poseLandmarks[nodeId])
+    const nodeNames = refNode.length > 0 ? refNode.map(({ nodeId }) => poseLandmarks[nodeId]) : ['No node']
 
     return (
-        <ListGroupItem style={{ paddingBlock: 4, paddingInline: 8 }} {...restProps}>
+        <ListGroupItem style={{ paddingBlock: 4, paddingInline: 8 }} disabled={isEditing && !isCurrent} {...restProps}>
             <div style={{ display: 'flex', alignItems: 'center' }}>
                 <div style={{ flex: 1 }}>
-                    {nodeNames.length === 0 ? (
-                        <span style={{ display: 'block', marginBottom: -2 }}>No node</span>
-                    ) : (
-                        nodeNames.map((name) => <span style={{ display: 'block', marginBottom: -2 }}>{name}</span>)
-                    )}
-                    <div className="text-muted" style={{ fontSize: 14 }}>
+                    {nodeNames.map((name) => (
+                        <p style={{ marginBottom: -2 }}>{name}</p>
+                    ))}
+                    <span className="text-muted" style={{ display: 'block', fontSize: 14 }}>
                         {isCurrent && (isNew ? 'New' : 'Editing')}
                         {isCurrent && tool !== 'Trajectory' && ' · '}
                         {tool !== 'Trajectory' &&
@@ -54,7 +52,7 @@ const ObjectEntry: FC<ObjectEntryProps> = ({
                                 : lineCount > 1
                                   ? `${lineCount} lines`
                                   : `${lineCount} line`)}
-                    </div>
+                    </span>
                 </div>
                 {!isCurrent && (
                     <div style={{ display: 'flex', alignItems: 'center', marginRight: -4 }}>
