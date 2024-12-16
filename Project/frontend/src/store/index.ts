@@ -71,20 +71,27 @@ const reducer = (state: State = initialState, action: Action) => {
                 },
                 finishedObjects: {
                     ...state.finishedObjects,
-                    [state.tool]: [...state.finishedObjects[state.tool], state.currentObject]
+                    [state.tool]: [
+                        ...state.finishedObjects[state.tool].filter(({ id }) => id !== state.currentObject.id),
+                        state.currentObject
+                    ]
                 }
+            }
+        case 'EDIT_OBJECT':
+            return {
+                ...state,
+                currentObject:
+                    state.finishedObjects[state.tool].find(({ id }) => id === action.payload) ?? createDefaultObject()
             }
         case 'ISOLATE_OBJECT':
             return { ...state, isolatedObjectId: action.payload }
         case 'DELETE_OBJECT':
             return {
                 ...state,
-                isolatedObjectId: state.isolatedObjectId === action.payload.id ? undefined : state.isolatedObjectId,
+                isolatedObjectId: state.isolatedObjectId === action.payload ? undefined : state.isolatedObjectId,
                 finishedObjects: {
                     ...state.finishedObjects,
-                    [action.payload.tool]: state.finishedObjects[action.payload.tool].filter(
-                        ({ id }) => id !== action.payload.id
-                    )
+                    [state.tool]: state.finishedObjects[state.tool].filter(({ id }) => id !== action.payload)
                 }
             }
         default:

@@ -29,6 +29,7 @@ const ObjectEntry: FC<ObjectEntryProps> = ({
 }) => {
     const tool = useSelector((state: State) => state.tool)
     const isNew = !useSelector((state: State) => state.finishedObjects[tool].map(({ id }) => id)).includes(id)
+    const isEditing = useSelector((state: State) => state.currentObject.id) === id
     const isolatedObjectId = useSelector((state: State) => state.isolatedObjectId)
 
     const lineCount = frames.reduce((count, frame) => count + frame.length, 0)
@@ -50,13 +51,14 @@ const ObjectEntry: FC<ObjectEntryProps> = ({
             </div>
             {!isCurrent && (
                 <div style={{ display: 'flex', alignItems: 'center', marginRight: -4 }}>
-                    <ObjectButton icon={faPenNib} onClick={onEditClick} />
+                    <ObjectButton icon={faPenNib} onClick={onEditClick} disabled={isEditing} />
                     <ObjectButton
                         icon={faStar}
                         onClick={onIsolateClick}
                         iconStyle={isolatedObjectId === id ? 'warning' : undefined}
+                        disabled={isEditing}
                     />
-                    <ObjectButton icon={faTrash} onClick={onDeleteClick} iconStyle="danger" />
+                    <ObjectButton icon={faTrash} onClick={onDeleteClick} iconStyle="danger" disabled={isEditing} />
                 </div>
             )}
         </ListGroupItem>

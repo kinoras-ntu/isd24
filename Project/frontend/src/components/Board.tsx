@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { FC, HTMLAttributes, MouseEventHandler } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
-import type { Line, Node, Point, RCObject } from '@/types/drawing'
+import type { Line, Node, ObjectId, Point, RCObject } from '@/types/drawing'
 import type { State } from '@/types/state'
 
 import { defaultNode } from '@/constants/defaults'
@@ -120,6 +120,8 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
         }
     }
 
+    const canDrawObject = (id: ObjectId) => (!isolatedObjectId || isolatedObjectId === id) && currentObject.id !== id
+
     const drawLine = (ctx: CanvasRenderingContext2D, line: Line, node: Node, refNode: Node) => {
         const foOpacity = stage !== 'Draw' ? 'ff' : '7f'
         const offsetX = node.x - refNode.x
@@ -159,21 +161,21 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
         // Draw finished objects
 
         finishedObjects.Binding.forEach(({ id, refNode, frames }) => {
-            if (!isolatedObjectId || isolatedObjectId === id) {
+            if (canDrawObject(id)) {
                 const node = nodeMaps.slice(-1)[0]?.find(({ nodeId }) => nodeId === refNode[0]?.nodeId)
                 if (node) frames[0].forEach((line) => drawLine(ctx, line, node, refNode[0]))
             }
         })
 
         finishedObjects.Flipbook.forEach(({ id, refNode, frames }) => {
-            if (!isolatedObjectId || isolatedObjectId === id) {
+            if (canDrawObject(id)) {
                 const node = nodeMaps.slice(-1)[0]?.find(({ nodeId }) => nodeId === refNode[0]?.nodeId)
                 if (node) frames[timer % frames.length].forEach((line) => drawLine(ctx, line, node, refNode[0]))
             }
         })
 
         finishedObjects.Trajectory.forEach(({ id, refNode, localColor, localStrokeWidth }) => {
-            if (!isolatedObjectId || isolatedObjectId === id) {
+            if (canDrawObject(id)) {
                 const line: Line = {
                     points: nodeMaps
                         .slice(0, nodeMaps.length - Math.round(fps / 2))
@@ -188,7 +190,7 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
         })
 
         finishedObjects.Triggering.forEach(({ id, refNode, frames }) => {
-            if (!isolatedObjectId || isolatedObjectId === id) {
+            if (canDrawObject(id)) {
                 const [node1, node2] = refNode.map(({ nodeId }) =>
                     nodeMaps.slice(-1)[0]?.find((n) => n.nodeId === nodeId)
                 )

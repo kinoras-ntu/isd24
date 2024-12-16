@@ -13,8 +13,9 @@ export type Action =
     | { type: 'SET_OUTLINE'; payload: boolean }
     | { type: 'SAVE_FRAME' }
     | { type: 'SAVE_CURRENT_OBJECT' }
+    | { type: 'EDIT_OBJECT'; payload: ObjectId }
     | { type: 'ISOLATE_OBJECT'; payload: ObjectId }
-    | { type: 'DELETE_OBJECT'; payload: { tool: Tool; id: ObjectId } }
+    | { type: 'DELETE_OBJECT'; payload: ObjectId }
     | { type: 'RESET' }
 
 export interface State {

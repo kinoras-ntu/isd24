@@ -16,10 +16,12 @@ const Panel: FC<ListGroupProps> = ({ ...restProps }) => {
 
     const dispatch = useDispatch()
 
+    const handleEditClick = (id: ObjectId) => dispatch({ type: 'EDIT_OBJECT', payload: id })
+
     const handleIsolateClick = (id: ObjectId) =>
         dispatch({ type: 'ISOLATE_OBJECT', payload: isolatedObjectId === id ? undefined : id })
 
-    const handleDeleteClick = (id: ObjectId) => dispatch({ type: 'DELETE_OBJECT', payload: { tool, id } })
+    const handleDeleteClick = (id: ObjectId) => dispatch({ type: 'DELETE_OBJECT', payload: id })
 
     return (
         <ListGroup data-bs-theme="dark" style={{ display: 'flex', flexDirection: 'column' }} {...restProps}>
@@ -31,6 +33,7 @@ const Panel: FC<ListGroupProps> = ({ ...restProps }) => {
                     <Object
                         key={object.id}
                         object={object}
+                        onEditClick={() => handleEditClick(object.id)}
                         onIsolateClick={() => handleIsolateClick(object.id)}
                         onDeleteClick={() => handleDeleteClick(object.id)}
                     />
