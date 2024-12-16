@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import type { FC, HTMLAttributes, MouseEventHandler } from 'react'
+import type { FC, HTMLAttributes } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
 import type { Line, Node, ObjectId, Point, RCObject } from '@/types/drawing'
@@ -19,7 +19,7 @@ type PenHandlerParams = {
 
 const fps = 10
 
-const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
+const Board: FC<BoardProps> = ({ height, width, style, ...restProps }) => {
     const tool = useSelector((state: State) => state.tool)
     const stage = useSelector((state: State) => state.stage)
     const currentObject = useSelector((state: State) => state.currentObject)
@@ -84,6 +84,7 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
                     })
                     break
                 case 'Triggering, Select':
+                    if (currentObject.refNode.map(({ nodeId }) => nodeId).includes(getNearestNode(x, y).nodeId)) break
                     setCurrentObject({
                         ...currentObject,
                         refNode: [...currentObject.refNode, getNearestNode(x, y)].slice(-2)
@@ -233,6 +234,7 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
             onTouchEnd={() => setIsDrawing(false)}
             onMouseLeave={() => setIsDrawing(false)}
             onTouchCancel={() => setIsDrawing(false)}
+            style={{ userSelect: 'none', ...style }}
             {...restProps}
         />
     )

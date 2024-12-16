@@ -30,6 +30,8 @@ const ControlBar: FC<ListGroupProps> = ({ ...restProps }) => {
         (tool === 'Triggering' && currentObject.refNode.length === 2) ||
         (tool !== 'Triggering' && currentObject.refNode.length === 1)
 
+    const canSave = canDraw && currentObject.frames.reduce((count, frame) => count + frame.length, 0)
+
     return (
         <ListGroup data-bs-theme="dark" horizontal {...restProps}>
             <Item style={{ display: 'flex', flex: 1, gap: '1rem' }}>
@@ -38,12 +40,12 @@ const ControlBar: FC<ListGroupProps> = ({ ...restProps }) => {
                 <StageButton stage="Draw" disabled={!canDraw} activeTools={['Binding', 'Flipbook', 'Triggering']} />
                 <span className="spacer" style={{ flex: 1 }} />
                 {tool === 'Flipbook' && (
-                    <Button className="btn-nohover" variant="outline-light" onClick={saveFrame}>
+                    <Button className="btn-nohover" variant="outline-light" onClick={saveFrame} disabled={!canDraw}>
                         <FontAwesomeIcon icon={faPlus} />
                         <span style={{ marginLeft: 8 }}>Frame</span>
                     </Button>
                 )}
-                <Button className="btn-nohover" variant="light" onClick={saveCurrentObject} disabled={!canDraw}>
+                <Button className="btn-nohover" variant="light" onClick={saveCurrentObject} disabled={!canSave}>
                     <FontAwesomeIcon icon={faPaperPlane} />
                     <span style={{ marginLeft: 8 }}>Save</span>
                 </Button>
