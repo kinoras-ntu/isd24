@@ -2,6 +2,8 @@ export type NodeId = number
 
 export type Color = string
 
+export type ObjectId = string
+
 export type Point = {
     x: number
     y: number
@@ -20,6 +22,7 @@ export interface Node extends Point {
 }
 
 export interface RCObject {
+    id: ObjectId
     localColor: Color
     localStrokeWidth: number
     refNode: Node[]

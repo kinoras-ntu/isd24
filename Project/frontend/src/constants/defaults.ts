@@ -1,3 +1,5 @@
+import { v4 as uuid } from 'uuid'
+
 import type { Node, RCObject } from '@/types/drawing'
 import type { Stage } from '@/types/state'
 
@@ -13,9 +15,10 @@ export const defaultNode: Node = {
     y: 0
 }
 
-export const defaultObject: RCObject = {
+export const createDefaultObject = (): RCObject => ({
+    id: uuid(),
     localColor: defaultColor,
     localStrokeWidth: defaultStrokeWidth,
     refNode: [],
     frames: [[]]
-}
+})

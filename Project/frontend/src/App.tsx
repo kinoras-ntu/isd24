@@ -17,7 +17,7 @@ const App: FC = () => {
                     <Screen height={height} width={width} />
                 </div>
             </main>
-            <Panel style={{ flex: 1 }}/>
+            <Panel style={{ flex: 1 }} />
         </div>
     )
 }

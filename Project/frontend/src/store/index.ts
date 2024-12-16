@@ -2,7 +2,7 @@ import { legacy_createStore as createStore } from 'redux'
 
 import { Action, State } from '@/types/state'
 
-import { defaultColor, defaultObject, defaultStage, defaultStrokeWidth } from '@/constants/defaults'
+import { createDefaultObject, defaultColor, defaultStage, defaultStrokeWidth } from '@/constants/defaults'
 
 const initialState: State = {
     tool: 'Binding',
@@ -10,7 +10,8 @@ const initialState: State = {
     color: defaultColor,
     strokeWidth: defaultStrokeWidth,
     outline: false,
-    currentObject: structuredClone(defaultObject),
+    isolatedObjectId: undefined,
+    currentObject: createDefaultObject(),
     finishedObjects: {
         Binding: [],
         Trajectory: [],
@@ -28,7 +29,7 @@ const reducer = (state: State = initialState, action: Action) => {
                 tool: action.payload,
                 stage: defaultStage,
                 currentObject: {
-                    ...structuredClone(defaultObject),
+                    ...createDefaultObject(),
                     localColor: state.color,
                     localStrokeWidth: state.strokeWidth
                 }
@@ -64,13 +65,26 @@ const reducer = (state: State = initialState, action: Action) => {
                 ...state,
                 stage: defaultStage,
                 currentObject: {
-                    ...structuredClone(defaultObject),
+                    ...createDefaultObject(),
                     localColor: state.color,
                     localStrokeWidth: state.strokeWidth
                 },
                 finishedObjects: {
                     ...state.finishedObjects,
                     [state.tool]: [...state.finishedObjects[state.tool], state.currentObject]
+                }
+            }
+        case 'ISOLATE_OBJECT':
+            return { ...state, isolatedObjectId: action.payload }
+        case 'DELETE_OBJECT':
+            return {
+                ...state,
+                isolatedObjectId: state.isolatedObjectId === action.payload.id ? undefined : state.isolatedObjectId,
+                finishedObjects: {
+                    ...state.finishedObjects,
+                    [action.payload.tool]: state.finishedObjects[action.payload.tool].filter(
+                        ({ id }) => id !== action.payload.id
+                    )
                 }
             }
         default:

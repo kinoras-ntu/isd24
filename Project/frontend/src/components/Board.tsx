@@ -19,6 +19,7 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
     const stage = useSelector((state: State) => state.stage)
     const currentObject = useSelector((state: State) => state.currentObject)
     const finishedObjects = useSelector((state: State) => state.finishedObjects)
+    const isolatedObjectId = useSelector((state: State) => state.isolatedObjectId)
 
     const dispatch = useDispatch()
     const setCurrentObject = (payload: RCObject) => dispatch({ type: 'SET_CURRENT_OBJECT', payload })
@@ -157,35 +158,45 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
 
         // Draw finished objects
 
-        finishedObjects.Binding.forEach(({ refNode, frames }) => {
-            const node = nodeMaps.slice(-1)[0]?.find(({ nodeId }) => nodeId === refNode[0]?.nodeId)
-            if (node) frames[0].forEach((line) => drawLine(ctx, line, node, refNode[0]))
-        })
-
-        finishedObjects.Flipbook.forEach(({ refNode, frames }) => {
-            const node = nodeMaps.slice(-1)[0]?.find(({ nodeId }) => nodeId === refNode[0]?.nodeId)
-            if (node) frames[timer % frames.length].forEach((line) => drawLine(ctx, line, node, refNode[0]))
-        })
-
-        finishedObjects.Trajectory.forEach(({ refNode, localColor, localStrokeWidth }) => {
-            const line: Line = {
-                points: nodeMaps
-                    .slice(0, nodeMaps.length - Math.round(fps / 2))
-                    .map((nodeMap) => nodeMap.find(({ nodeId }) => nodeId === refNode[0]?.nodeId))
-                    .map((node): Point => ({ x: node?.x ?? -1, y: node?.y ?? -1 }))
-                    .filter(({ x, y }) => x !== -1 && y !== -1),
-                strokeWidth: localStrokeWidth,
-                color: localColor
-            }
-            drawLine(ctx, line, defaultNode, defaultNode)
-        })
-
-        finishedObjects.Triggering.forEach(({ refNode, frames }) => {
-            const [node1, node2] = refNode.map(({ nodeId }) => nodeMaps.slice(-1)[0]?.find((n) => n.nodeId === nodeId))
-            const distance = node1 && node2 ? Math.hypot(node2.x - node1.x, node2.y - node1.y) : Infinity
-            if (distance < 80) {
-                const node = nodeMaps[nodeMaps.length - 1]?.find(({ nodeId }) => nodeId === refNode[0]?.nodeId)
+        finishedObjects.Binding.forEach(({ id, refNode, frames }) => {
+            if (!isolatedObjectId || isolatedObjectId === id) {
+                const node = nodeMaps.slice(-1)[0]?.find(({ nodeId }) => nodeId === refNode[0]?.nodeId)
                 if (node) frames[0].forEach((line) => drawLine(ctx, line, node, refNode[0]))
+            }
+        })
+
+        finishedObjects.Flipbook.forEach(({ id, refNode, frames }) => {
+            if (!isolatedObjectId || isolatedObjectId === id) {
+                const node = nodeMaps.slice(-1)[0]?.find(({ nodeId }) => nodeId === refNode[0]?.nodeId)
+                if (node) frames[timer % frames.length].forEach((line) => drawLine(ctx, line, node, refNode[0]))
+            }
+        })
+
+        finishedObjects.Trajectory.forEach(({ id, refNode, localColor, localStrokeWidth }) => {
+            if (!isolatedObjectId || isolatedObjectId === id) {
+                const line: Line = {
+                    points: nodeMaps
+                        .slice(0, nodeMaps.length - Math.round(fps / 2))
+                        .map((nodeMap) => nodeMap.find(({ nodeId }) => nodeId === refNode[0]?.nodeId))
+                        .map((node): Point => ({ x: node?.x ?? -1, y: node?.y ?? -1 }))
+                        .filter(({ x, y }) => x !== -1 && y !== -1),
+                    strokeWidth: localStrokeWidth,
+                    color: localColor
+                }
+                drawLine(ctx, line, defaultNode, defaultNode)
+            }
+        })
+
+        finishedObjects.Triggering.forEach(({ id, refNode, frames }) => {
+            if (!isolatedObjectId || isolatedObjectId === id) {
+                const [node1, node2] = refNode.map(({ nodeId }) =>
+                    nodeMaps.slice(-1)[0]?.find((n) => n.nodeId === nodeId)
+                )
+                const distance = node1 && node2 ? Math.hypot(node2.x - node1.x, node2.y - node1.y) : Infinity
+                if (distance < 80) {
+                    const node = nodeMaps[nodeMaps.length - 1]?.find(({ nodeId }) => nodeId === refNode[0]?.nodeId)
+                    if (node) frames[0].forEach((line) => drawLine(ctx, line, node, refNode[0]))
+                }
             }
         })
     }

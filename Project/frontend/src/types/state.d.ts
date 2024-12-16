@@ -1,4 +1,4 @@
-import type { Color, RCObject } from '@/types/drawing'
+import type { Color, ObjectId, RCObject } from '@/types/drawing'
 
 export type Tool = 'Binding' | 'Flipbook' | 'Triggering' | 'Emission' | 'Trajectory'
 
@@ -13,6 +13,8 @@ export type Action =
     | { type: 'SET_OUTLINE'; payload: boolean }
     | { type: 'SAVE_FRAME' }
     | { type: 'SAVE_CURRENT_OBJECT' }
+    | { type: 'ISOLATE_OBJECT'; payload: ObjectId }
+    | { type: 'DELETE_OBJECT'; payload: { tool: Tool; id: ObjectId } }
     | { type: 'RESET' }
 
 export interface State {
@@ -21,6 +23,7 @@ export interface State {
     color: Color
     strokeWidth: number
     outline: boolean
+    isolatedObjectId: ObjectId | undefined
     currentObject: RCObject
     finishedObjects: {
         Binding: RCObject[]
