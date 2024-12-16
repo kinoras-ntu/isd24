@@ -13,8 +13,12 @@ const App: FC = () => {
             <main style={{ width }}>
                 <ControlBar />
                 <div style={{ position: 'relative', marginTop: 16 }}>
-                    <Board height={height} width={width} style={{ position: 'absolute', zIndex: 999 }} />
-                    <Screen height={height} width={width} />
+                    <Board
+                        height={height}
+                        width={width}
+                        style={{ position: 'absolute', zIndex: 999, borderRadius: 6 }}
+                    />
+                    <Screen height={height} width={width} style={{ borderRadius: 6 }} />
                 </div>
             </main>
             <Panel style={{ flex: 1 }} />

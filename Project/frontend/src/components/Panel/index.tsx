@@ -22,11 +22,11 @@ const Panel: FC<ListGroupProps> = ({ ...restProps }) => {
     const handleDeleteClick = (id: ObjectId) => dispatch({ type: 'DELETE_OBJECT', payload: { tool, id } })
 
     return (
-        <ListGroup data-bs-theme="dark" {...restProps}>
+        <ListGroup data-bs-theme="dark" style={{ display: 'flex', flexDirection: 'column' }} {...restProps}>
             <PanelItem name="Current Drawing">
                 <Object object={currentObject} isCurrent />
             </PanelItem>
-            <PanelItem name="Finished Drawings">
+            <PanelItem name="Finished Drawings" style={{ flex: 1 }}>
                 {finishedObjects.map((object) => (
                     <Object
                         key={object.id}
