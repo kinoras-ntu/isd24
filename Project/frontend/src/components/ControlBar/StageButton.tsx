@@ -24,17 +24,19 @@ const StageButton: FC<StageButtonProps> = ({ stage, activeTools, ...restProps })
     const dispatch = useDispatch()
     const setStage = (payload: Stage) => dispatch({ type: 'SET_STAGE', payload })
 
-    return (activeTools && !activeTools?.includes(useSelector((state: State) => state.tool))) ?
-        (<></>) : (
-            <Button
-                variant={stage === currentStage ? 'light' : 'outline-light'}
-                onClick={() => setStage(stage === currentStage ? 'Idle' : stage)}
-                {...restProps}
-            >
-                <FontAwesomeIcon icon={Icon[stage]} width={12} />
-                <span style={{ marginLeft: '0.5rem' }}>{stage}</span>
-            </Button>
-        )
+    return activeTools && !activeTools?.includes(useSelector((state: State) => state.tool)) ? (
+        <></>
+    ) : (
+        <Button
+            className="btn-nohover"
+            variant={stage === currentStage ? 'light' : 'outline-light'}
+            onClick={() => setStage(stage === currentStage ? 'Idle' : stage)}
+            {...restProps}
+        >
+            <FontAwesomeIcon icon={Icon[stage]} width={12} />
+            <span style={{ marginLeft: '0.5rem' }}>{stage}</span>
+        </Button>
+    )
 }
 
 export default StageButton

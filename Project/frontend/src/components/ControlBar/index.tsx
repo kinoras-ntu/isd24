@@ -38,12 +38,12 @@ const ControlBar: FC<ListGroupProps> = ({ ...restProps }) => {
                 <StageButton stage="Draw" disabled={!canDraw} activeTools={['Binding', 'Flipbook', 'Triggering']} />
                 <span className="spacer" style={{ flex: 1 }} />
                 {tool === 'Flipbook' && (
-                    <Button variant="outline-light" onClick={saveFrame}>
+                    <Button className="btn-nohover" variant="outline-light" onClick={saveFrame}>
                         <FontAwesomeIcon icon={faPlus} />
                         <span style={{ marginLeft: 8 }}>Frame</span>
                     </Button>
                 )}
-                <Button variant="light" onClick={saveCurrentObject} disabled={!canDraw}>
+                <Button className="btn-nohover" variant="light" onClick={saveCurrentObject} disabled={!canDraw}>
                     <FontAwesomeIcon icon={faPaperPlane} />
                     <span style={{ marginLeft: 8 }}>Save</span>
                 </Button>
@@ -62,7 +62,11 @@ const ControlBar: FC<ListGroupProps> = ({ ...restProps }) => {
                 </div>
             </Item>
             <Item>
-                <Button variant={outline ? 'light' : 'outline-light'} onClick={() => setOutline(!outline)}>
+                <Button
+                    className="btn-nohover"
+                    variant={outline ? 'light' : 'outline-light'}
+                    onClick={() => setOutline(!outline)}
+                >
                     <FontAwesomeIcon icon={faUser} />
                     <span style={{ marginLeft: 8 }}>Outline</span>
                 </Button>

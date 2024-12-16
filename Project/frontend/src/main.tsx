@@ -7,6 +7,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import store from '@/store'
 
 import App from '@/App'
+import '@/main.css'
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>

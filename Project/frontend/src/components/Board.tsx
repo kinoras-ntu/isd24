@@ -12,6 +12,11 @@ interface BoardProps extends HTMLAttributes<HTMLCanvasElement> {
     width: number
 }
 
+type PenHandlerParams = {
+    clientX: number
+    clientY: number
+}
+
 const fps = 10
 
 const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
@@ -64,11 +69,11 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
         return retNode
     }
 
-    const handleMouseDown: MouseEventHandler<HTMLCanvasElement> = (e) => {
+    const penDownHandler = ({ clientX, clientY }: PenHandlerParams) => {
         const rect = canvasRef.current?.getBoundingClientRect()
         if (rect) {
-            const x = e.clientX - rect.left
-            const y = e.clientY - rect.top
+            const x = clientX - rect.left
+            const y = clientY - rect.top
             switch (`${tool}, ${stage}`) {
                 case 'Binding, Select':
                 case 'Flipbook, Select':
@@ -101,12 +106,12 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
         }
     }
 
-    const handleMouseMove: MouseEventHandler<HTMLCanvasElement> = (e) => {
+    const penMoveHandler = ({ clientX, clientY }: PenHandlerParams) => {
         if (!isDrawing) return
         const rect = canvasRef.current?.getBoundingClientRect()
         if (rect) {
-            const x = e.clientX - rect.left
-            const y = e.clientY - rect.top
+            const x = clientX - rect.left
+            const y = clientY - rect.top
             switch (`${tool}, ${stage}`) {
                 case 'Binding, Draw':
                 case 'Flipbook, Draw':
@@ -208,10 +213,26 @@ const Board: FC<BoardProps> = ({ height, width, ...restProps }) => {
             height={height}
             width={width}
             ref={canvasRef}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
+            onMouseDown={(e) => {
+                e.preventDefault()
+                penDownHandler(e)
+            }}
+            onTouchStart={(e) => {
+                e.preventDefault()
+                penDownHandler(e.touches[0])
+            }}
+            onMouseMove={(e) => {
+                e.preventDefault()
+                penMoveHandler(e)
+            }}
+            onTouchMove={(e) => {
+                e.preventDefault()
+                penMoveHandler(e.touches[0])
+            }}
             onMouseUp={() => setIsDrawing(false)}
+            onTouchEnd={() => setIsDrawing(false)}
             onMouseLeave={() => setIsDrawing(false)}
+            onTouchCancel={() => setIsDrawing(false)}
             {...restProps}
         />
     )
