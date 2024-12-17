@@ -8,11 +8,12 @@ interface ScreenProps extends HTMLAttributes<HTMLImageElement> {
     width: number
 }
 
-const Screen: FC<ScreenProps> = ({ height, width, ...restProps }) => (
+const Screen: FC<ScreenProps> = ({ height, width, style, ...restProps }) => (
     <img
         src={`/video_feed?outline=${useSelector((state: State) => state.outline)}`}
         height={height}
         width={width}
+        style={{ borderRadius: 6, ...style }}
         {...restProps}
     />
 )

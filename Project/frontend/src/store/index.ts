@@ -5,6 +5,7 @@ import { Action, State } from '@/types/state'
 import { createDefaultObject, defaultColor, defaultStage, defaultStrokeWidth } from '@/constants/defaults'
 
 const initialState: State = {
+    displayMode: 'Normal',
     tool: 'Binding',
     stage: defaultStage,
     color: defaultColor,
@@ -24,6 +25,8 @@ const initialState: State = {
 
 const reducer = (state: State = initialState, action: Action) => {
     switch (action.type) {
+        case 'SET_DISPLAY_MODE':
+            return { ...state, displayMode: action.payload }
         case 'SET_TOOL':
             return {
                 ...state,

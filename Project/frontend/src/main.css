@@ -10,3 +10,10 @@ body {
     background-color: var(--bs-btn-bg);
     color: var(--bs-btn-color);
 }
+
+* {
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}

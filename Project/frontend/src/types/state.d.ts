@@ -1,10 +1,13 @@
 import type { Color, ObjectId, RCObject } from '@/types/drawing'
 
+export type DisplayMode = 'Normal' | 'Fullscreen'
+
 export type Tool = 'Binding' | 'Flipbook' | 'Triggering' | 'Emission' | 'Trajectory'
 
 export type Stage = 'Idle' | 'Select' | 'Draw'
 
 export type Action =
+    | { type: 'SET_DISPLAY_MODE'; payload: DisplayMode }
     | { type: 'SET_TOOL'; payload: Tool }
     | { type: 'SET_STAGE'; payload: Stage }
     | { type: 'SET_CURRENT_OBJECT'; payload: RCObject }
@@ -21,6 +24,7 @@ export type Action =
     | { type: 'RESET' }
 
 export interface State {
+    displayMode: DisplayMode
     tool: Tool
     stage: Stage
     color: Color

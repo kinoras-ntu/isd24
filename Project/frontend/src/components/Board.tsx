@@ -198,11 +198,14 @@ const Board: FC<BoardProps> = ({ height, width, style, ...restProps }) => {
 
         finishedObjects.Triggering.forEach(({ id, refNode, frames }) => {
             if (canDrawObject(id)) {
-                const [node1, node2] = refNode.map(({ nodeId }) =>
-                    nodeMaps.slice(-1)[0]?.find((n) => n.nodeId === nodeId)
-                )
+                const currentNodeMap = nodeMaps.slice(-1)[0]
+                const [node1, node2] = refNode.map(({ nodeId }) => currentNodeMap?.find((n) => n.nodeId === nodeId))
                 const distance = node1 && node2 ? Math.hypot(node2.x - node1.x, node2.y - node1.y) : Infinity
-                if (distance < 80) {
+                const earsDistance = Math.hypot(
+                    currentNodeMap[7].x - currentNodeMap[8].x,
+                    currentNodeMap[7].y - currentNodeMap[8].y
+                )
+                if (distance < earsDistance * 0.75) {
                     const node = nodeMaps[nodeMaps.length - 1]?.find(({ nodeId }) => nodeId === refNode[0]?.nodeId)
                     if (node) frames[0].forEach((line) => drawLine(ctx, line, node, refNode[0]))
                 }
@@ -235,7 +238,7 @@ const Board: FC<BoardProps> = ({ height, width, style, ...restProps }) => {
             onTouchEnd={() => setIsDrawing(false)}
             onMouseLeave={() => setIsDrawing(false)}
             onTouchCancel={() => setIsDrawing(false)}
-            style={{ userSelect: 'none', ...style }}
+            style={{ position: 'absolute', zIndex: 999, borderRadius: 6, ...style }}
             {...restProps}
         />
     )
