@@ -15,7 +15,7 @@ Semester 1, Academic Year 2024/2025
 
 ## Project
 
-See the [kinoras/reality-canvas](https://github.com/kinoras-ntu/reality-canvas) repository, which is a replication of [RealityCanvas](https://dl.acm.org/doi/10.1145/3586183.3606716).
+See the [kinoras-ntu/reality-canvas](https://github.com/kinoras-ntu/reality-canvas) repository, which is a replication of [RealityCanvas](https://dl.acm.org/doi/10.1145/3586183.3606716).
 
 ### Option 1: Base projects
 
